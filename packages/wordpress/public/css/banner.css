@@ -87,6 +87,7 @@
 .ck-btn-primary {
   background: var(--ck-primary); color: var(--ck-primary-contrast);
   border-color: var(--ck-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
 }
 .ck-btn-primary:hover { filter: brightness(.95); }
 .ck-btn-link {

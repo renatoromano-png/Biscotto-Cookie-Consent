@@ -59,11 +59,26 @@ class ConsentKit_Frontend {
 		);
 
 		// Colori personalizzati via variabili CSS inline (vuoto = default/automatico).
+		$primary          = sanitize_hex_color( $s['primary_color'] );
+		$primary_contrast = sanitize_hex_color( $s['primary_text_color'] );
+		$bg               = sanitize_hex_color( $s['bg_color'] );
+		$text             = sanitize_hex_color( $s['text_color'] );
+
+		// R6 — auto-contrasto: se il testo non è impostato ma lo sfondo sì,
+		// scegli chiaro/scuro in base alla luminanza dello sfondo.
+		if ( ! $text && $bg ) {
+			$text = self::contrast_text_for( $bg );
+		}
+		// Testo dei pulsanti: se non impostato, deriva dall'accento (fondo pieno del bottone).
+		if ( ! $primary_contrast && $primary ) {
+			$primary_contrast = self::contrast_text_for( $primary );
+		}
+
 		$ck_vars = array(
-			'--ck-primary'          => sanitize_hex_color( $s['primary_color'] ),
-			'--ck-primary-contrast' => sanitize_hex_color( $s['primary_text_color'] ),
-			'--ck-bg'               => sanitize_hex_color( $s['bg_color'] ),
-			'--ck-text'             => sanitize_hex_color( $s['text_color'] ),
+			'--ck-primary'          => $primary,
+			'--ck-primary-contrast' => $primary_contrast,
+			'--ck-bg'               => $bg,
+			'--ck-text'             => $text,
 		);
 		$ck_css = '';
 		foreach ( $ck_vars as $ck_var => $ck_value ) {
@@ -87,6 +102,35 @@ class ConsentKit_Frontend {
 		// nell'oggetto ckConfig. Deve essere stampato PRIMA del core.
 		$config = wp_json_encode( $this->build_config( $s ) );
 		wp_add_inline_script( 'consentkit-manager', 'window.ckConfig = ' . $config . ';', 'before' );
+	}
+
+	/**
+	 * Auto-contrasto (R6): dato un colore di sfondo esadecimale, restituisce
+	 * il colore di testo che contrasta meglio — scuro su fondo chiaro, chiaro
+	 * su fondo scuro. Usa la luminanza relativa WCAG. Ritorna '' se hex non valido.
+	 *
+	 * @param string $hex Colore esadecimale, es. '#1f2937'.
+	 * @return string '#1f2937' | '#ffffff' | ''
+	 */
+	private static function contrast_text_for( $hex ) {
+		$hex = ltrim( (string) $hex, '#' );
+		if ( 3 === strlen( $hex ) ) {
+			$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+		}
+		if ( 6 !== strlen( $hex ) || ! ctype_xdigit( $hex ) ) {
+			return '';
+		}
+		$channels = array(
+			hexdec( substr( $hex, 0, 2 ) ) / 255,
+			hexdec( substr( $hex, 2, 2 ) ) / 255,
+			hexdec( substr( $hex, 4, 2 ) ) / 255,
+		);
+		foreach ( $channels as $i => $c ) {
+			$channels[ $i ] = ( $c <= 0.03928 ) ? ( $c / 12.92 ) : pow( ( $c + 0.055 ) / 1.055, 2.4 );
+		}
+		$luminance = 0.2126 * $channels[0] + 0.7152 * $channels[1] + 0.0722 * $channels[2];
+		// Soglia ~0.22 = punto di crossover tra testo #1f2937 e #ffffff.
+		return ( $luminance > 0.22 ) ? '#1f2937' : '#ffffff';
 	}
 
 	/**
