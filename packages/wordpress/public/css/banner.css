@@ -141,13 +141,14 @@
    (viewport basso) usa ~1/2 per restare leggibile (regola dedicata sotto). */
 @media (max-width: 600px),
        (min-width: 601px) and (max-width: 1024px) and (orientation: portrait),
-       (orientation: landscape) and (max-height: 500px) {
+       (max-width: 1024px) and (orientation: landscape) and (max-height: 500px) {
   .ck-banner {
     left: 0; right: 0; bottom: 0; top: auto;
     transform: none;
     width: auto; max-width: none;
     border-left: 0; border-right: 0; border-bottom: 0;
     border-radius: 0;
+    box-shadow: var(--ck-shadow);
     display: flex; flex-direction: column; justify-content: center; gap: 14px;
     min-height: 33vh; max-height: 70vh; overflow-y: auto;
     padding: clamp(20px, 5vw, 40px);
@@ -167,7 +168,7 @@
 }
 
 /* Telefono in orizzontale: barra più alta (~1/2) per leggibilità del testo. */
-@media (orientation: landscape) and (max-height: 500px) {
+@media (max-width: 1024px) and (orientation: landscape) and (max-height: 500px) {
   .ck-banner { min-height: 50vh; }
 }
 
