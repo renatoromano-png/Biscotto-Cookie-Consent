@@ -115,11 +115,11 @@
   .ck-actions .ck-btn-primary { flex: 1 1 auto; }
   /* Su mobile il riquadro a destra diventa barra a piena larghezza in basso. */
   .ck-box-right { left: 16px; right: 16px; bottom: 16px; width: auto; }
-  /* Testo piu' leggibile su smartphone (base 14->17, titolo 16->20, link 13->15). */
-  .ck-banner { font-size: 17px; }
-  .ck-banner .ck-title { font-size: 20px; }
-  .ck-link { font-size: 15px; }
-  .ck-btn { padding: 12px 18px; }
+  /* Testo ingrandito su smartphone per leggibilita' (base 14->19, titolo 16->23, link 13->16). */
+  .ck-banner { font-size: 19px; }
+  .ck-banner .ck-title { font-size: 23px; }
+  .ck-link { font-size: 16px; }
+  .ck-btn { padding: 13px 18px; }
 }
 
 @media (prefers-color-scheme: dark) {
