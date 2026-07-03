@@ -4,7 +4,7 @@ Tags: cookie, consent, gdpr, cookie banner, consent mode
 Requires at least: 5.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -74,6 +74,9 @@ Adds a runtime cookie scanner to detect cookies and third-party services loaded 
 First public release.
 
 == Changelog ==
+
+= 1.2.3 =
+* Improved: the "Bottom bar" banner position is now a full-width band about half the screen tall, with large readable text and buttons that scale with the viewport. More prominent, Complianz-style presence. Desktop keeps sensible size caps.
 
 = 1.2.2 =
 * Improved: banner text on smartphones enlarged further for readability (body 19px, title 23px, links 16px). Desktop appearance unchanged.

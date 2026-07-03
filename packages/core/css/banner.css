@@ -31,7 +31,17 @@
   font-size: 14px;
   line-height: 1.5;
 }
-.ck-bottom-bar { left: 0; right: 0; bottom: 0; border-left: 0; border-right: 0; border-bottom: 0; }
+.ck-bottom-bar {
+  left: 0; right: 0; bottom: 0; border-left: 0; border-right: 0; border-bottom: 0;
+  display: flex; flex-direction: column; justify-content: center; gap: 14px;
+  min-height: 50vh; max-height: 90vh; overflow-y: auto;
+  padding: clamp(20px, 5vw, 40px);
+}
+/* Tipografia leggibile per la barra a piena larghezza (scala col viewport). */
+.ck-bottom-bar .ck-title { font-size: clamp(21px, 5.6vw, 28px); }
+.ck-bottom-bar .ck-text { font-size: clamp(17px, 4.6vw, 20px); line-height: 1.55; }
+.ck-bottom-bar .ck-link { font-size: clamp(14px, 3.6vw, 16px); }
+.ck-bottom-bar .ck-actions .ck-btn { font-size: clamp(17px, 4.4vw, 19px); padding: 13px 22px; }
 .ck-modal {
   left: 50%; bottom: 24px; transform: translateX(-50%);
   width: min(560px, calc(100% - 32px));
@@ -115,11 +125,6 @@
   .ck-actions .ck-btn-primary { flex: 1 1 auto; }
   /* Su mobile il riquadro a destra diventa barra a piena larghezza in basso. */
   .ck-box-right { left: 16px; right: 16px; bottom: 16px; width: auto; }
-  /* Testo ingrandito su smartphone per leggibilita' (base 14->19, titolo 16->23, link 13->16). */
-  .ck-banner { font-size: 19px; }
-  .ck-banner .ck-title { font-size: 23px; }
-  .ck-link { font-size: 16px; }
-  .ck-btn { padding: 13px 18px; }
 }
 
 @media (prefers-color-scheme: dark) {
