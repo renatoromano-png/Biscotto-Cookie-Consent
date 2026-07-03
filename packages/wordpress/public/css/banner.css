@@ -133,11 +133,41 @@
 .ck-review:hover { transform: scale(1.05); }
 
 /* --- Responsive ----------------------------------------------------------- */
-@media (max-width: 600px) {
-  .ck-actions { justify-content: stretch; }
-  .ck-actions .ck-btn-primary { flex: 1 1 auto; }
-  /* Su mobile il riquadro a destra diventa barra a piena larghezza in basso. */
-  .ck-box-right { left: 16px; right: 16px; bottom: 16px; width: auto; }
+/* --- Modalità COMPATTA -----------------------------------------------------
+   Telefoni (ogni orientamento) + tablet in verticale: qualunque posizione
+   scelta nel backend diventa una barra in basso a piena larghezza, alta ~1/3
+   dello schermo, con testo e pulsanti scalati. Il telefono in orizzontale
+   (viewport basso) usa ~1/2 per restare leggibile (regola dedicata sotto). */
+@media (max-width: 600px),
+       (min-width: 601px) and (max-width: 1024px) and (orientation: portrait),
+       (orientation: landscape) and (max-height: 500px) {
+  .ck-banner {
+    left: 0; right: 0; bottom: 0; top: auto;
+    transform: none;
+    width: auto; max-width: none;
+    border-left: 0; border-right: 0; border-bottom: 0;
+    border-radius: 0;
+    display: flex; flex-direction: column; justify-content: center; gap: 14px;
+    min-height: 33vh; max-height: 70vh; overflow-y: auto;
+    padding: clamp(20px, 5vw, 40px);
+  }
+  /* Tipografia scalata (vale per tutte le posizioni, non solo bottom-bar). */
+  .ck-banner .ck-title { font-size: clamp(21px, 5.6vw, 28px); }
+  .ck-banner .ck-text  { font-size: clamp(17px, 4.6vw, 20px); line-height: 1.55; }
+  .ck-banner .ck-link  { font-size: clamp(14px, 3.6vw, 16px); }
+  /* Azioni: barra a piena larghezza => neutralizza la colonna dei box d'angolo. */
+  .ck-banner .ck-actions { flex-direction: row; flex-wrap: wrap; justify-content: stretch; align-items: center; }
+  .ck-banner.ck-box-right .ck-actions,
+  .ck-banner.ck-box-left  .ck-actions { flex-direction: row; }
+  .ck-banner .ck-actions .ck-btn { font-size: clamp(17px, 4.4vw, 19px); padding: 13px 22px; }
+  .ck-banner .ck-actions .ck-btn-primary { flex: 1 1 auto; }
+  .ck-banner.ck-box-right .ck-actions .ck-btn,
+  .ck-banner.ck-box-left  .ck-actions .ck-btn { width: auto; }
+}
+
+/* Telefono in orizzontale: barra più alta (~1/2) per leggibilità del testo. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .ck-banner { min-height: 50vh; }
 }
 
 @media (prefers-color-scheme: dark) {
