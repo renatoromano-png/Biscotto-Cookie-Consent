@@ -37,11 +37,13 @@
   min-height: 50vh; max-height: 90vh; overflow-y: auto;
   padding: clamp(20px, 5vw, 40px);
 }
-/* Tipografia leggibile per la barra a piena larghezza (scala col viewport). */
-.ck-bottom-bar .ck-title { font-size: clamp(21px, 5.6vw, 28px); }
-.ck-bottom-bar .ck-text { font-size: clamp(17px, 4.6vw, 20px); line-height: 1.55; }
-.ck-bottom-bar .ck-link { font-size: clamp(14px, 3.6vw, 16px); }
-.ck-bottom-bar .ck-actions .ck-btn { font-size: clamp(17px, 4.4vw, 19px); padding: 13px 22px; }
+/* Tipografia leggibile per la barra a piena larghezza (scala col viewport).
+   Selettore .ck-banner.ck-bottom-bar (specificita' 0,3,0) per battere le regole
+   base .ck-banner .ck-title/.ck-text definite piu' in basso nel file. */
+.ck-banner.ck-bottom-bar .ck-title { font-size: clamp(21px, 5.6vw, 28px); }
+.ck-banner.ck-bottom-bar .ck-text { font-size: clamp(17px, 4.6vw, 20px); line-height: 1.55; }
+.ck-banner.ck-bottom-bar .ck-link { font-size: clamp(14px, 3.6vw, 16px); }
+.ck-banner.ck-bottom-bar .ck-actions .ck-btn { font-size: clamp(17px, 4.4vw, 19px); padding: 13px 22px; }
 .ck-modal {
   left: 50%; bottom: 24px; transform: translateX(-50%);
   width: min(560px, calc(100% - 32px));
