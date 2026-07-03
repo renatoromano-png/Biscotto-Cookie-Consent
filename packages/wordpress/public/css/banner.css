@@ -170,19 +170,28 @@
   .ck-banner.ck-banner .ck-title { font-size: clamp(24px, 6.5vw, 34px); }
   .ck-banner.ck-banner .ck-text  { font-size: clamp(18px, 4.8vw, 23px); line-height: 1.5; }
   .ck-banner.ck-banner .ck-link  { font-size: clamp(15px, 4vw, 18px); }
-  /* Azioni: barra a piena larghezza => neutralizza la colonna dei box d'angolo. */
-  .ck-banner .ck-actions { flex-direction: row; flex-wrap: wrap; justify-content: stretch; align-items: center; }
+  /* Azioni (verticale): i due primari a LARGHEZZA UGUALE su una riga
+     (flex-basis 0 => non dipende dal testo); "Gestisci preferenze" (link)
+     su una riga propria, centrato, sotto. */
+  .ck-banner .ck-actions { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: center; }
   .ck-banner.ck-box-right .ck-actions,
   .ck-banner.ck-box-left  .ck-actions { flex-direction: row; }
   .ck-banner.ck-banner .ck-actions .ck-btn { font-size: clamp(17px, 4.6vw, 21px); padding: 15px 24px; }
-  .ck-banner .ck-actions .ck-btn-primary { flex: 1 1 auto; }
+  .ck-banner .ck-actions .ck-btn-primary { flex: 1 1 0; width: auto; }
   .ck-banner.ck-box-right .ck-actions .ck-btn,
   .ck-banner.ck-box-left  .ck-actions .ck-btn { width: auto; }
+  .ck-banner .ck-actions .ck-btn-link { order: 1; flex: 1 0 100%; width: auto; text-align: center; }
 }
 
-/* Telefono in orizzontale: barra più alta (~1/2) per leggibilità del testo. */
+/* Telefono in orizzontale (viewport basso): banner ~1/2, font e padding piu'
+   contenuti e TUTTE le azioni su un'unica riga (compreso "Gestisci") per non
+   sforare in altezza. */
 @media (max-width: 1024px) and (orientation: landscape) and (max-height: 500px) {
-  .ck-banner { min-height: 50vh; }
+  .ck-banner { min-height: 50vh; max-height: 85vh; gap: 8px; padding: 14px clamp(20px, 5vw, 40px); }
+  .ck-banner.ck-banner .ck-title { font-size: clamp(18px, 3.2vw, 23px); }
+  .ck-banner.ck-banner .ck-text  { font-size: clamp(14px, 2.4vw, 17px); line-height: 1.4; }
+  .ck-banner.ck-banner .ck-actions .ck-btn { font-size: clamp(14px, 2.2vw, 17px); padding: 10px 16px; }
+  .ck-banner .ck-actions .ck-btn-link { flex: 0 1 auto; width: auto; text-align: center; }
 }
 
 @media (prefers-color-scheme: dark) {
