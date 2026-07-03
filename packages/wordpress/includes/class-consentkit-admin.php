@@ -130,7 +130,7 @@ class ConsentKit_Admin {
 			}
 		}
 		if ( isset( $input['position'] ) ) {
-			$out['position'] = in_array( $input['position'], array( 'bottom-bar', 'modal', 'box-right' ), true ) ? $input['position'] : 'bottom-bar';
+			$out['position'] = in_array( $input['position'], array( 'bottom-bar', 'modal', 'box-right', 'box-left' ), true ) ? $input['position'] : 'bottom-bar';
 		}
 		$out['show_banner'] = empty( $input['show_banner'] ) ? 0 : 1;
 

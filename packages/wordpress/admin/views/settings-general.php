@@ -88,6 +88,7 @@ $consentkit_opt = CONSENTKIT_OPTION;
 				<option value="bottom-bar" <?php selected( $settings['position'], 'bottom-bar' ); ?>><?php esc_html_e( 'Barra in basso', 'consentkit' ); ?></option>
 				<option value="modal" <?php selected( $settings['position'], 'modal' ); ?>><?php esc_html_e( 'Riquadro centrato (modal)', 'consentkit' ); ?></option>
 				<option value="box-right" <?php selected( $settings['position'], 'box-right' ); ?>><?php esc_html_e( 'Riquadro in basso a destra', 'consentkit' ); ?></option>
+				<option value="box-left" <?php selected( $settings['position'], 'box-left' ); ?>><?php esc_html_e( 'Riquadro in basso a sinistra', 'consentkit' ); ?></option>
 			</select>
 		</td>
 	</tr>
