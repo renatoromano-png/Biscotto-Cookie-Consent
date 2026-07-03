@@ -79,31 +79,40 @@
 
 .ck-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: flex-end; }
 
-/* Pulsanti — Accetta e Rifiuta condividono .ck-btn-primary => parità grafica */
+/* Pulsanti — Accetta e Rifiuta condividono .ck-btn-primary => parità grafica.
+   Doppia classe (.ck-btn.ck-btn-primary) + !important sulle proprietà colore:
+   il banner è iniettato in temi arbitrari che stilano i <button> (spesso a
+   contorno nel proprio colore) e sovrascriverebbero il riempimento. */
 .ck-btn {
   font: inherit; cursor: pointer; border-radius: 8px; padding: 10px 18px;
   border: 1px solid transparent; font-weight: 600; line-height: 1.2;
 }
-.ck-btn-primary {
-  background: var(--ck-primary); color: var(--ck-primary-contrast);
-  border-color: var(--ck-primary);
+.ck-btn.ck-btn-primary {
+  background: var(--ck-primary) !important;
+  color: var(--ck-primary-contrast) !important;
+  border: 1px solid var(--ck-primary) !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
 }
-.ck-btn-primary:hover { filter: brightness(.95); }
-.ck-btn-link {
-  background: transparent; color: var(--ck-muted); border: 0;
+.ck-btn.ck-btn-primary:hover { filter: brightness(.95); }
+.ck-btn.ck-btn-link {
+  background: transparent !important;
+  color: var(--ck-muted) !important;
+  border: 0 !important;
   text-decoration: underline; padding: 10px 8px; font-weight: 500;
 }
-.ck-btn-link:hover { color: var(--ck-text); }
+.ck-btn.ck-btn-link:hover { color: var(--ck-text) !important; }
 
-/* X di chiusura — evidenza grafica pari ai pulsanti (§13.1) */
+/* X di chiusura — evidenza grafica pari ai pulsanti (§13.1).
+   !important sui colori per difendersi dagli stili <button> del tema. */
 .ck-close {
   position: absolute; top: 10px; right: 12px;
   width: 32px; height: 32px; border-radius: 8px;
-  border: 1px solid var(--ck-border); background: var(--ck-bg);
-  color: var(--ck-text); font-size: 22px; line-height: 1; cursor: pointer;
+  border: 1px solid var(--ck-border) !important;
+  background: var(--ck-bg) !important;
+  color: var(--ck-text) !important;
+  font-size: 22px; line-height: 1; cursor: pointer;
 }
-.ck-close:hover { background: var(--ck-border); }
+.ck-close:hover { background: var(--ck-border) !important; }
 
 /* --- Overlay + pannello preferenze ---------------------------------------- */
 .ck-overlay {
