@@ -153,15 +153,19 @@
     min-height: 33vh; max-height: 70vh; overflow-y: auto;
     padding: clamp(20px, 5vw, 40px);
   }
-  /* Tipografia scalata (vale per tutte le posizioni, non solo bottom-bar). */
-  .ck-banner .ck-title { font-size: clamp(21px, 5.6vw, 28px); }
-  .ck-banner .ck-text  { font-size: clamp(17px, 4.6vw, 20px); line-height: 1.55; }
-  .ck-banner .ck-link  { font-size: clamp(14px, 3.6vw, 16px); }
+  /* Tipografia scalata a tutto lo spazio. La doppia classe .ck-banner.ck-banner
+     alza la specificita' a 0,3,0 (0,4,0 sui bottoni) per battere le regole
+     desktop .ck-banner.ck-bottom-bar (0,3,0 / 0,4,0) che, valendo a ogni
+     larghezza, altrimenti terrebbero i font piccoli quando la posizione e'
+     "Barra in basso". Vince per QUALSIASI posizione. */
+  .ck-banner.ck-banner .ck-title { font-size: clamp(24px, 6.5vw, 34px); }
+  .ck-banner.ck-banner .ck-text  { font-size: clamp(18px, 4.8vw, 23px); line-height: 1.5; }
+  .ck-banner.ck-banner .ck-link  { font-size: clamp(15px, 4vw, 18px); }
   /* Azioni: barra a piena larghezza => neutralizza la colonna dei box d'angolo. */
   .ck-banner .ck-actions { flex-direction: row; flex-wrap: wrap; justify-content: stretch; align-items: center; }
   .ck-banner.ck-box-right .ck-actions,
   .ck-banner.ck-box-left  .ck-actions { flex-direction: row; }
-  .ck-banner .ck-actions .ck-btn { font-size: clamp(17px, 4.4vw, 19px); padding: 13px 22px; }
+  .ck-banner.ck-banner .ck-actions .ck-btn { font-size: clamp(17px, 4.6vw, 21px); padding: 15px 24px; }
   .ck-banner .ck-actions .ck-btn-primary { flex: 1 1 auto; }
   .ck-banner.ck-box-right .ck-actions .ck-btn,
   .ck-banner.ck-box-left  .ck-actions .ck-btn { width: auto; }
