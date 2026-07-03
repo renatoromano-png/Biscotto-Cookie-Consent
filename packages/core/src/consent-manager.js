@@ -36,7 +36,7 @@
   var repromptAfterDays = parseInt(cfg.repromptAfterDays, 10) || 180; // Garante: min 6 mesi prima di riproporre
   var policyVersion = String(cfg.policyVersion || '1');
   var forceRenewDate = cfg.forceRenewDate ? Date.parse(cfg.forceRenewDate) : null;
-  var position = (cfg.position === 'modal' || cfg.position === 'box-right') ? cfg.position : 'bottom-bar';
+  var position = (cfg.position === 'modal' || cfg.position === 'box-right' || cfg.position === 'box-left') ? cfg.position : 'bottom-bar';
 
   // --- gtag / dataLayer bootstrap ------------------------------------------
   window.dataLayer = window.dataLayer || [];
