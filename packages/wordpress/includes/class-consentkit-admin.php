@@ -64,6 +64,8 @@ class ConsentKit_Admin {
 					'importUrl'  => esc_url_raw( rest_url( 'consentkit/v1/scan/import' ) ),
 					'serverUrl'  => esc_url_raw( rest_url( 'consentkit/v1/scan/server' ) ),
 					'enrichUrl'  => esc_url_raw( rest_url( 'consentkit/v1/scan/enrich' ) ),
+					'dbVersionUrl' => esc_url_raw( rest_url( 'consentkit/v1/scan/db-version' ) ),
+					'githubUrl'    => 'https://github.com/' . ConsentKit_Cookie_Database::GITHUB_REPO . '/commits/master/' . ConsentKit_Cookie_Database::GITHUB_CSV_PATH,
 					'origin'     => $origin,
 					'timeoutMs'  => 12000,
 					'maxUrls'    => 10,
@@ -95,6 +97,12 @@ class ConsentKit_Admin {
 						/* translators: %d: numero di campi completati. */
 						'enriched'     => __( '%d campi completati dal database.', 'consentkit' ),
 						'enrichedNone' => __( 'Nessun campo aggiuntivo trovato nel database.', 'consentkit' ),
+						'checkingDb'        => __( 'Verifica in corso…', 'consentkit' ),
+						'dbUpToDate'        => __( 'Database aggiornato: nessun aggiornamento disponibile.', 'consentkit' ),
+						/* translators: %s: data dell'ultimo aggiornamento upstream (AAAA-MM-GG). */
+						'dbUpdateAvailable' => __( 'È disponibile un aggiornamento del database (ultima modifica upstream: %s).', 'consentkit' ),
+						'dbGithubLink'      => __( 'Vedi su GitHub', 'consentkit' ),
+						'dbCheckError'      => __( 'Impossibile verificare ora. Riprova più tardi.', 'consentkit' ),
 					),
 				)
 			);

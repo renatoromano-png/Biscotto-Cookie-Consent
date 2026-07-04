@@ -84,5 +84,22 @@ $consentkit_last_at = isset( $consentkit_last['scanned_at'] ) ? $consentkit_last
 		</p>
 	</div>
 
+	<hr />
+	<h2><?php esc_html_e( 'Database cookie incluso', 'consentkit' ); ?></h2>
+	<p class="description">
+		<?php
+		printf(
+			/* translators: %s: data dello snapshot del database bundlato (AAAA-MM-GG). */
+			esc_html__( 'Il plugin include una copia locale di Open Cookie Database (licenza Apache-2.0), aggiornata al %s. Usarla non invia alcun dato del tuo sito.', 'consentkit' ),
+			esc_html( ConsentKit_Cookie_Database::SNAPSHOT_DATE )
+		);
+		?>
+	</p>
+	<p>
+		<button type="button" class="button" id="ck-scan-dbcheck"><?php esc_html_e( 'Controlla aggiornamenti database', 'consentkit' ); ?></button>
+		<span id="ck-scan-dbcheck-status" class="ck-scan-status" aria-live="polite"></span>
+	</p>
+	<p class="description"><?php esc_html_e( "Contatta l'API pubblica di GitHub (api.github.com) solo quando clicchi questo pulsante, per verificare la data dell'ultimo aggiornamento del dataset upstream. Nessun aggiornamento automatico, nessun dato del sito inviato.", 'consentkit' ); ?></p>
+
 	<div id="ck-scan-frames" style="position:absolute;width:0;height:0;overflow:hidden;left:-9999px;" aria-hidden="true"></div>
 </div>

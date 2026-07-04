@@ -258,12 +258,43 @@
 			.catch( function () { setStatus( status, cfg.i18n.error ); } );
 	}
 
+	function checkDbVersion() {
+		var status = $( 'ck-scan-dbcheck-status' );
+		status.textContent = '';
+		setStatus( status, cfg.i18n.checkingDb );
+		fetch( cfg.dbVersionUrl, {
+			credentials: 'same-origin',
+			headers: { 'X-WP-Nonce': cfg.restNonce }
+		} )
+			.then( function ( r ) { return r.json(); } )
+			.then( function ( res ) {
+				status.textContent = '';
+				if ( !res || !res.checked ) {
+					status.textContent = cfg.i18n.dbCheckError;
+					return;
+				}
+				if ( res.update_available ) {
+					status.appendChild( document.createTextNode( cfg.i18n.dbUpdateAvailable.replace( '%s', res.latest ) + ' ' ) );
+					var link = document.createElement( 'a' );
+					link.href = cfg.githubUrl;
+					link.target = '_blank';
+					link.rel = 'noopener nofollow';
+					link.textContent = cfg.i18n.dbGithubLink;
+					status.appendChild( link );
+				} else {
+					status.textContent = cfg.i18n.dbUpToDate;
+				}
+			} )
+			.catch( function () { status.textContent = cfg.i18n.dbCheckError; } );
+	}
+
 	document.addEventListener( 'DOMContentLoaded', function () {
 		var start = $( 'ck-scan-start' );
 		if ( !start ) { return; }
 		start.addEventListener( 'click', startScan );
 		$( 'ck-scan-import' ).addEventListener( 'click', importSelected );
 		$( 'ck-scan-enrich' ).addEventListener( 'click', enrichSuggestions );
+		$( 'ck-scan-dbcheck' ).addEventListener( 'click', checkDbVersion );
 		$( 'ck-scan-checkall' ).addEventListener( 'change', function ( e ) {
 			Array.prototype.forEach.call( document.querySelectorAll( '.ck-scan-pick' ), function ( cb ) {
 				cb.checked = e.target.checked;

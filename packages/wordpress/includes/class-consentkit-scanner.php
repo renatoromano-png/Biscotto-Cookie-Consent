@@ -129,6 +129,16 @@ class ConsentKit_Scanner {
 				'permission_callback' => $can_manage,
 			)
 		);
+
+		register_rest_route(
+			'consentkit/v1',
+			'/scan/db-version',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( $this, 'db_version' ),
+				'permission_callback' => $can_manage,
+			)
+		);
 	}
 
 	/**
@@ -413,6 +423,66 @@ class ConsentKit_Scanner {
 			'url_policy' => $url_policy,
 			'source'     => $source,
 		);
+	}
+
+	/**
+	 * Controllo manuale, avviato solo dall'admin, della data dell'ultimo
+	 * commit upstream che ha toccato il CSV bundlato. Unica chiamata
+	 * esterna del plugin: nessun dato personale o del sito viene inviato,
+	 * solo una richiesta GET pubblica all'API di GitHub. Cachata 24h per
+	 * non consumare il rate limit pubblico di GitHub.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function db_version() {
+		$transient_key = 'consentkit_db_version_check';
+		$cached        = get_transient( $transient_key );
+		if ( is_array( $cached ) ) {
+			return new WP_REST_Response( $cached, 200 );
+		}
+
+		$bundled = ConsentKit_Cookie_Database::SNAPSHOT_DATE;
+		$url     = sprintf(
+			'https://api.github.com/repos/%s/commits?path=%s&per_page=1',
+			ConsentKit_Cookie_Database::GITHUB_REPO,
+			ConsentKit_Cookie_Database::GITHUB_CSV_PATH
+		);
+
+		$resp = wp_remote_get(
+			$url,
+			array(
+				'timeout'    => 10,
+				'user-agent' => 'ConsentKit-Scanner/' . CONSENTKIT_VERSION,
+				'headers'    => array( 'Accept' => 'application/vnd.github+json' ),
+			)
+		);
+
+		if ( is_wp_error( $resp ) || 200 !== (int) wp_remote_retrieve_response_code( $resp ) ) {
+			$result = array(
+				'bundled'          => $bundled,
+				'latest'           => null,
+				'update_available' => false,
+				'checked'          => false,
+			);
+			return new WP_REST_Response( $result, 200 );
+		}
+
+		$body        = json_decode( wp_remote_retrieve_body( $resp ), true );
+		$latest_date = '';
+		if ( is_array( $body ) && isset( $body[0]['commit']['committer']['date'] ) ) {
+			$latest_date = substr( (string) $body[0]['commit']['committer']['date'], 0, 10 );
+		}
+
+		$result = array(
+			'bundled'          => $bundled,
+			'latest'           => '' !== $latest_date ? $latest_date : null,
+			'update_available' => '' !== $latest_date && $latest_date > $bundled,
+			'checked'          => true,
+		);
+
+		set_transient( $transient_key, $result, DAY_IN_SECONDS );
+
+		return new WP_REST_Response( $result, 200 );
 	}
 
 	// -------------------------------------------------------------------------
