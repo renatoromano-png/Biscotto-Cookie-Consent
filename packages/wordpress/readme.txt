@@ -4,7 +4,7 @@ Tags: cookie, consent, gdpr, cookie banner, consent mode
 Requires at least: 5.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.2.4
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,6 +24,8 @@ Features:
 * Compliant banner re-prompt (minimum 6 months) and re-consent when the cookie policy changes.
 * Optional pseudonymized consent log for GDPR audits.
 * Runtime cookie scanner: loads your pages in a hidden iframe (admin only) and detects the cookies and third-party domains actually loaded, then suggests registry entries to review and save.
+* Cookie database enrichment: fills in missing service, category, retention period and privacy-policy link using a bundled copy of Open Cookie Database (Apache-2.0), with an optional manual check for dataset updates.
+* One-click "copy code" box for building your cookie policy page from the plugin's shortcode.
 
 The core is a dependency-free JavaScript engine, reusable on non-WordPress sites too.
 
@@ -31,7 +33,6 @@ Cookies are managed through a pre-filled registry of the most common services, e
 
 Roadmap (in progress):
 
-* Automatic recognition and classification of the detected cookies through a public database (service, purpose, duration, category).
 * Automatic blocking of iframes and embeds (Google Maps, YouTube) and Google Fonts with a "click to load" placeholder.
 
 == Installation ==
@@ -49,7 +50,7 @@ Yes, with no extra configuration and no limits.
 The plugin implements the technical requirements of the 10 June 2021 guidelines. Overall compliance also depends on a correct privacy notice and on the proper classification of each site's cookies.
 
 = Does it send data to external services? =
-No. ConsentKit does not communicate with any third-party server. It loads the Google (Consent Mode/GTM) and LinkedIn scripts only after consent and only if you configure them. The optional consent log stays in your site's database and is pseudonymized.
+Only in one specific, opt-in case: the "Check for database updates" button (Settings → ConsentKit → Scan) contacts the public GitHub API only when you click it, to check whether the bundled Open Cookie Database snapshot is outdated. No personal or site data is sent — only a request for the latest commit date of a public file, cached for 24 hours. Everything else stays local: ConsentKit does not otherwise communicate with any third-party server. It loads the Google (Consent Mode/GTM) and LinkedIn scripts only after consent and only if you configure them. The optional consent log stays in your site's database and is pseudonymized.
 
 == Screenshots ==
 
@@ -60,6 +61,9 @@ No. ConsentKit does not communicate with any third-party server. It loads the Go
 5. Settings &rarr; Integrations: Consent Mode v2, GTM, LinkedIn.
 
 == Upgrade Notice ==
+
+= 1.4.0 =
+Scan tab gains database-enrichment and update-check buttons; Cookies tab gains a one-click "copy shortcode" box for your cookie policy page.
 
 = 1.2.0 =
 New banner position "Bottom-right box": a compact card on desktop, full-width bar on mobile.
@@ -74,6 +78,25 @@ Adds a runtime cookie scanner to detect cookies and third-party services loaded 
 First public release.
 
 == Changelog ==
+
+= 1.4.0 =
+* New: "Enrich from database" button (Scan tab) fills in missing service, category, retention period and privacy-policy link for scan suggestions using a bundled copy of Open Cookie Database (Apache-2.0, no external calls). Never overwrites a field you already set.
+* New: "Check for database updates" button (Scan tab) checks, only when you click it, whether a newer snapshot of Open Cookie Database is available upstream on GitHub. No automatic checks, no site data sent.
+* New: "Copy code" box (Cookies tab) with the `[consentkit_cookie_policy]` shortcode ready to paste into your cookie policy page.
+
+= 1.3.3 =
+* Fixed: mobile action buttons now share equal width regardless of label length; "Manage preferences" moved to its own centered row below Accept/Reject. Landscape phones: reduced typography/padding so the banner fits in about half the screen instead of overflowing.
+
+= 1.3.2 =
+* Fixed: primary/link buttons now resist being restyled by the host theme (explicit color/background/border rules) so the accent color and auto-contrast text always render correctly regardless of theme CSS.
+
+= 1.3.1 =
+* Fixed: mobile banner text and buttons now actually scale up on the "Bottom bar" position (fixed a CSS specificity issue where base rules were overriding the compact-mode typography).
+
+= 1.3.0 =
+* New: banner position "Bottom-left box", mirroring "Bottom-right box".
+* Improved: responsive banner behaviour is now driven by width/orientation/height instead of special cases — compact full-width bar on phones (any orientation) and portrait tablets, unchanged desktop appearance otherwise.
+* New: automatic text contrast (WCAG relative luminance) when background/accent colors are customized and the text-color fields are left empty.
 
 = 1.2.4 =
 * Fixed: on the "Bottom bar" position the enlarged title and body text were overridden by base rules (equal CSS specificity); the banner box grew but the fonts stayed small. Typography now uses a higher-specificity selector and renders large as intended.
