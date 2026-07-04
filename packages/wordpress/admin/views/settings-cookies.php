@@ -50,12 +50,19 @@ function consentkit_cookie_row( $i, $row, $opt, $cats ) {
 	<?php esc_html_e( 'Elenca qui i cookie/servizi che il sito usa davvero: popola il registro dal tab Scansione oppure aggiungili a mano. Per le terze parti basta servizio, categoria e link alla loro policy: non serve ogni singolo cookie (Garante).', 'consentkit' ); ?>
 </p>
 
-<p class="description">
-	<?php esc_html_e( 'Per pubblicare questo elenco nella tua pagina cookie policy usa gli shortcode:', 'consentkit' ); ?>
-	<code>[consentkit_cookie_table]</code> <?php esc_html_e( '(tabella cookie per categoria),', 'consentkit' ); ?>
-	<code>[consentkit_consent_settings]</code> <?php esc_html_e( '(stato del consenso + pulsante per modificarlo),', 'consentkit' ); ?>
-	<code>[consentkit_cookie_policy]</code> <?php esc_html_e( '(entrambi insieme).', 'consentkit' ); ?>
-</p>
+<div class="ck-copy-code">
+	<p class="description"><?php esc_html_e( 'Per pubblicare questo elenco nella tua pagina cookie policy, copia questo codice e incollalo nella pagina:', 'consentkit' ); ?></p>
+	<p>
+		<input type="text" id="ck-shortcode-copy" class="regular-text code" readonly="readonly" value="[consentkit_cookie_policy]" onclick="this.select();" />
+		<button type="button" class="button" id="ck-copy-shortcode"><?php esc_html_e( 'Copia', 'consentkit' ); ?></button>
+		<span id="ck-copy-status" class="ck-scan-status" aria-live="polite"></span>
+	</p>
+	<p class="description">
+		<?php esc_html_e( 'In alternativa puoi comporre la pagina con gli shortcode singoli:', 'consentkit' ); ?>
+		<code>[consentkit_cookie_table]</code> <?php esc_html_e( '(solo tabella cookie),', 'consentkit' ); ?>
+		<code>[consentkit_consent_settings]</code> <?php esc_html_e( '(solo stato consenso + pulsante).', 'consentkit' ); ?>
+	</p>
+</div>
 
 <table class="widefat striped consentkit-cookies">
 	<thead>
@@ -122,5 +129,30 @@ function consentkit_cookie_row( $i, $row, $opt, $cats ) {
 			if ( sel ) { sel.value = 'necessary'; }
 		}
 	} );
+
+	// Copia lo shortcode della cookie page negli appunti.
+	var copyBtn = document.getElementById( 'ck-copy-shortcode' );
+	if ( copyBtn ) {
+		copyBtn.addEventListener( 'click', function () {
+			var input = document.getElementById( 'ck-shortcode-copy' );
+			var status = document.getElementById( 'ck-copy-status' );
+			var announce = function () {
+				if ( status ) { status.textContent = '<?php echo esc_js( __( 'Copiato!', 'consentkit' ) ); ?>'; }
+			};
+			if ( navigator.clipboard && navigator.clipboard.writeText ) {
+				navigator.clipboard.writeText( input.value ).then( announce, function () {
+					input.select();
+					input.setSelectionRange( 0, 99999 );
+					document.execCommand( 'copy' );
+					announce();
+				} );
+			} else {
+				input.select();
+				input.setSelectionRange( 0, 99999 );
+				document.execCommand( 'copy' );
+				announce();
+			}
+		} );
+	}
 } )();
 </script>
