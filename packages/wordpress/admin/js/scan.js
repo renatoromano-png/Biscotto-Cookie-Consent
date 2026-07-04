@@ -247,10 +247,9 @@
 				var changed = 0;
 				enriched.forEach( function ( row, i ) {
 					var before = rowsData[ i ] || {};
-					if ( row.service !== before.service || row.duration !== before.duration ||
-						row.url_policy !== before.url_policy || row.category !== before.category ) {
-						changed++;
-					}
+					[ 'service', 'duration', 'url_policy', 'category' ].forEach( function ( field ) {
+						if ( row[ field ] !== before[ field ] ) { changed++; }
+					} );
 				} );
 				renderRows( enriched );
 				setStatus( status, changed ? cfg.i18n.enriched.replace( '%d', changed ) : cfg.i18n.enrichedNone );
