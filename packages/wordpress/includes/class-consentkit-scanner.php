@@ -119,6 +119,16 @@ class ConsentKit_Scanner {
 				'permission_callback' => $can_manage,
 			)
 		);
+
+		register_rest_route(
+			'consentkit/v1',
+			'/scan/enrich',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'enrich' ),
+				'permission_callback' => $can_manage,
+			)
+		);
 	}
 
 	/**
@@ -322,6 +332,86 @@ class ConsentKit_Scanner {
 				'total'    => count( $registry ),
 			),
 			200
+		);
+	}
+
+	/**
+	 * Completa i campi vuoti dei suggerimenti (non ancora importati) usando
+	 * il database cookie bundlato (Open Cookie Database). Non sovrascrive
+	 * mai un campo già valorizzato — vedi enrich_row().
+	 *
+	 * Body atteso: { suggestions: [ {name, service, category, duration, url_policy, source}, ... ] }
+	 *
+	 * @param WP_REST_Request $request Richiesta.
+	 * @return WP_REST_Response
+	 */
+	public function enrich( $request ) {
+		$params = $request->get_json_params();
+		$rows   = isset( $params['suggestions'] ) && is_array( $params['suggestions'] ) ? $params['suggestions'] : array();
+
+		$csv_path = CONSENTKIT_DIR . 'includes/data/open-cookie-database.csv';
+		$index    = ConsentKit_Cookie_Database::build_index( $csv_path );
+
+		$out = array();
+		foreach ( $rows as $row ) {
+			$out[] = $this->enrich_row( is_array( $row ) ? $row : array(), $index );
+		}
+
+		return new WP_REST_Response( array( 'suggestions' => $out ), 200 );
+	}
+
+	/**
+	 * Arricchisce una riga: se il classificatore interno non aveva
+	 * riconosciuto il cookie/dominio (service vuoto), il match del database
+	 * riempie servizio+categoria+durata+link insieme; se il servizio era
+	 * già stato riconosciuto, il database riempie solo durata/link se ancora
+	 * vuoti, senza mai toccare servizio/categoria già decisi.
+	 *
+	 * @param array $row   Riga suggerimento { name, service, category, duration, url_policy, source }.
+	 * @param array $index Indice da ConsentKit_Cookie_Database::build_index().
+	 * @return array Riga (eventualmente) arricchita.
+	 */
+	private function enrich_row( $row, $index ) {
+		$name       = isset( $row['name'] ) ? sanitize_text_field( $row['name'] ) : '';
+		$source     = isset( $row['source'] ) && 'domain' === $row['source'] ? 'domain' : 'cookie';
+		$service    = isset( $row['service'] ) ? (string) $row['service'] : '';
+		$category   = isset( $row['category'] ) ? (string) $row['category'] : '';
+		$duration   = isset( $row['duration'] ) ? (string) $row['duration'] : '';
+		$url_policy = isset( $row['url_policy'] ) ? (string) $row['url_policy'] : '';
+
+		if ( '' === $name ) {
+			return $row;
+		}
+
+		$match = 'domain' === $source
+			? ConsentKit_Cookie_Database::lookup_domain( $name, $index )
+			: ConsentKit_Cookie_Database::lookup_cookie( $name, $index );
+
+		if ( null === $match ) {
+			return $row;
+		}
+
+		// Solo campo vuoto: 'service' vuoto è l'unico caso in cui il
+		// classificatore interno non aveva riconosciuto la riga, quindi solo
+		// lì il database può anche decidere servizio+categoria.
+		if ( '' === $service ) {
+			$service  = $match['service'];
+			$category = $match['category'];
+		}
+		if ( '' === $duration ) {
+			$duration = $match['duration'];
+		}
+		if ( '' === $url_policy ) {
+			$url_policy = $match['url_policy'];
+		}
+
+		return array(
+			'name'       => $name,
+			'service'    => $service,
+			'category'   => $category,
+			'duration'   => $duration,
+			'url_policy' => $url_policy,
+			'source'     => $source,
 		);
 	}
 

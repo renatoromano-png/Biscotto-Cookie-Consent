@@ -30,6 +30,7 @@ require_once CONSENTKIT_DIR . 'includes/class-consentkit-consent.php';
 require_once CONSENTKIT_DIR . 'includes/class-consentkit-frontend.php';
 require_once CONSENTKIT_DIR . 'includes/class-consentkit-admin.php';
 require_once CONSENTKIT_DIR . 'includes/class-consentkit-api.php';
+require_once CONSENTKIT_DIR . 'includes/class-consentkit-cookie-database.php';
 require_once CONSENTKIT_DIR . 'includes/class-consentkit-scanner.php';
 require_once CONSENTKIT_DIR . 'includes/class-consentkit-shortcodes.php';
 require_once CONSENTKIT_DIR . 'includes/class-consentkit.php';
