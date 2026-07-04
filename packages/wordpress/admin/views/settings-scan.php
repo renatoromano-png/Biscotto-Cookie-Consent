@@ -66,12 +66,18 @@ $consentkit_last_at = isset( $consentkit_last['scanned_at'] ) ? $consentkit_last
 					<th class="check-column"><input type="checkbox" id="ck-scan-checkall" /></th>
 					<th><?php esc_html_e( 'Nome / Dominio', 'consentkit' ); ?></th>
 					<th><?php esc_html_e( 'Servizio', 'consentkit' ); ?></th>
+					<th><?php esc_html_e( 'Durata', 'consentkit' ); ?></th>
 					<th><?php esc_html_e( 'Categoria', 'consentkit' ); ?></th>
 					<th><?php esc_html_e( 'Origine', 'consentkit' ); ?></th>
 				</tr>
 			</thead>
 			<tbody id="ck-scan-rows"></tbody>
 		</table>
+		<p>
+			<button type="button" class="button" id="ck-scan-enrich"><?php esc_html_e( 'Arricchisci dal database', 'consentkit' ); ?></button>
+			<span id="ck-scan-enrich-status" class="ck-scan-status" aria-live="polite"></span>
+		</p>
+		<p class="description"><?php esc_html_e( 'Completa servizio, categoria, durata e link privacy usando Open Cookie Database incluso nel plugin (licenza Apache-2.0, nessuna chiamata esterna). Non sovrascrive mai un campo già compilato.', 'consentkit' ); ?></p>
 		<p>
 			<button type="button" class="button button-primary" id="ck-scan-import"><?php esc_html_e( 'Aggiungi i selezionati al registro', 'consentkit' ); ?></button>
 			<span id="ck-scan-import-status" class="ck-scan-status" aria-live="polite"></span>

@@ -63,6 +63,7 @@ class ConsentKit_Admin {
 					'collectUrl' => esc_url_raw( rest_url( 'consentkit/v1/scan/collect' ) ),
 					'importUrl'  => esc_url_raw( rest_url( 'consentkit/v1/scan/import' ) ),
 					'serverUrl'  => esc_url_raw( rest_url( 'consentkit/v1/scan/server' ) ),
+					'enrichUrl'  => esc_url_raw( rest_url( 'consentkit/v1/scan/enrich' ) ),
 					'origin'     => $origin,
 					'timeoutMs'  => 12000,
 					'maxUrls'    => 10,
@@ -89,6 +90,11 @@ class ConsentKit_Admin {
 						'tooMany'      => __( 'Massimo 10 URL: ho scansionato i primi 10.', 'consentkit' ),
 						/* translators: %d: numero di URL esterni ignorati. */
 						'externalSkipped' => __( '%d URL esterni ignorati (si scansiona solo questo sito).', 'consentkit' ),
+						'info'         => __( 'Info', 'consentkit' ),
+						'enriching'    => __( 'Ricerca nel database…', 'consentkit' ),
+						/* translators: %d: numero di campi completati. */
+						'enriched'     => __( '%d campi completati dal database.', 'consentkit' ),
+						'enrichedNone' => __( 'Nessun campo aggiuntivo trovato nel database.', 'consentkit' ),
 					),
 				)
 			);

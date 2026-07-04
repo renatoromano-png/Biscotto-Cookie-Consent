@@ -94,7 +94,7 @@
 		if ( !rowsData.length ) {
 			var tr = document.createElement( 'tr' );
 			var td = document.createElement( 'td' );
-			td.colSpan = 5;
+			td.colSpan = 6;
 			td.textContent = cfg.i18n.nothing;
 			tr.appendChild( td );
 			tbody.appendChild( tr );
@@ -117,6 +117,18 @@
 
 			var tdService = document.createElement( 'td' );
 			tdService.textContent = row.service || '';
+			if ( row.url_policy ) {
+				tdService.appendChild( document.createTextNode( ' ' ) );
+				var infoLink = document.createElement( 'a' );
+				infoLink.href = row.url_policy;
+				infoLink.target = '_blank';
+				infoLink.rel = 'noopener nofollow';
+				infoLink.textContent = cfg.i18n.info;
+				tdService.appendChild( infoLink );
+			}
+
+			var tdDuration = document.createElement( 'td' );
+			tdDuration.textContent = row.duration || '';
 
 			var tdCat = document.createElement( 'td' );
 			var sel = document.createElement( 'select' );
@@ -137,6 +149,7 @@
 			tr.appendChild( tdCheck );
 			tr.appendChild( tdName );
 			tr.appendChild( tdService );
+			tr.appendChild( tdDuration );
 			tr.appendChild( tdCat );
 			tr.appendChild( tdSource );
 			tbody.appendChild( tr );
@@ -224,11 +237,33 @@
 			.catch( function () { setStatus( status, cfg.i18n.error ); } );
 	}
 
+	function enrichSuggestions() {
+		var status = $( 'ck-scan-enrich-status' );
+		if ( !rowsData.length ) { return; }
+		setStatus( status, cfg.i18n.enriching );
+		rest( cfg.enrichUrl, { suggestions: rowsData } )
+			.then( function ( res ) {
+				var enriched = res && res.suggestions ? res.suggestions : rowsData;
+				var changed = 0;
+				enriched.forEach( function ( row, i ) {
+					var before = rowsData[ i ] || {};
+					if ( row.service !== before.service || row.duration !== before.duration ||
+						row.url_policy !== before.url_policy || row.category !== before.category ) {
+						changed++;
+					}
+				} );
+				renderRows( enriched );
+				setStatus( status, changed ? cfg.i18n.enriched.replace( '%d', changed ) : cfg.i18n.enrichedNone );
+			} )
+			.catch( function () { setStatus( status, cfg.i18n.error ); } );
+	}
+
 	document.addEventListener( 'DOMContentLoaded', function () {
 		var start = $( 'ck-scan-start' );
 		if ( !start ) { return; }
 		start.addEventListener( 'click', startScan );
 		$( 'ck-scan-import' ).addEventListener( 'click', importSelected );
+		$( 'ck-scan-enrich' ).addEventListener( 'click', enrichSuggestions );
 		$( 'ck-scan-checkall' ).addEventListener( 'change', function ( e ) {
 			Array.prototype.forEach.call( document.querySelectorAll( '.ck-scan-pick' ), function ( cb ) {
 				cb.checked = e.target.checked;
