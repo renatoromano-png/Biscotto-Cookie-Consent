@@ -4,7 +4,7 @@ Tags: cookie, consent, gdpr, cookie banner, consent mode
 Requires at least: 5.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,6 +26,7 @@ Features:
 * Runtime cookie scanner: loads your pages in a hidden iframe (admin only) and detects the cookies and third-party domains actually loaded, then suggests registry entries to review and save.
 * Cookie database enrichment: fills in missing service, category, retention period and privacy-policy link using a bundled copy of Open Cookie Database (Apache-2.0), with an optional manual check for dataset updates.
 * One-click "copy code" box for building your cookie policy page from the plugin's shortcode.
+* "Create Cookie Policy page" button (Cookies tab): generates a pre-filled draft page with boilerplate text and the shortcode already in place, ready for you to fill in your own details before publishing. A companion "Update last-modified date" button and `[consentkit_last_updated]` shortcode let you bump the displayed date whenever you publish a substantive change.
 
 The core is a dependency-free JavaScript engine, reusable on non-WordPress sites too.
 
@@ -62,6 +63,9 @@ Only in one specific, opt-in case: the "Check for database updates" button (Sett
 
 == Upgrade Notice ==
 
+= 1.4.1 =
+Cookies tab gains a "Create Cookie Policy page" button (pre-filled draft, ready to complete and publish) and an "Update last-modified date" button for the policy page.
+
 = 1.4.0 =
 Scan tab gains database-enrichment and update-check buttons; Cookies tab gains a one-click "copy shortcode" box for your cookie policy page.
 
@@ -78,6 +82,11 @@ Adds a runtime cookie scanner to detect cookies and third-party services loaded 
 First public release.
 
 == Changelog ==
+
+= 1.4.1 =
+* New: "Create Cookie Policy page" button (Cookies tab) generates a draft page pre-filled with boilerplate legal text and the `[consentkit_cookie_policy]` shortcode already in place, clearly marked as needing your own details before publishing. Safe to click repeatedly: it opens the existing draft instead of creating duplicates.
+* New: "Update last-modified date" button (Cookies tab) and `[consentkit_last_updated]` shortcode: the "last updated" line on your cookie policy page is now a manual, explicit action instead of a date frozen at page creation.
+* Improved: Integrations tab now has a short explanation of what each toggle does and when to use it.
 
 = 1.4.0 =
 * New: "Enrich from database" button (Scan tab) fills in missing service, category, retention period and privacy-policy link for scan suggestions using a bundled copy of Open Cookie Database (Apache-2.0, no external calls). Never overwrites a field you already set.
