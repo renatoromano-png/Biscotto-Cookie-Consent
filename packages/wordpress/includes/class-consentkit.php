@@ -47,6 +47,8 @@ final class ConsentKit {
 
 		if ( is_admin() ) {
 			$this->admin = new ConsentKit_Admin();
+			// Pulsante "Crea pagina Cookie Policy" nel tab Cookie.
+			new ConsentKit_Policy_Page();
 		}
 	}
 

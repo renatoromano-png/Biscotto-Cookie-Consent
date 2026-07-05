@@ -62,6 +62,35 @@ function consentkit_cookie_row( $i, $row, $opt, $cats ) {
 		<code>[consentkit_cookie_table]</code> <?php esc_html_e( '(solo tabella cookie),', 'consentkit' ); ?>
 		<code>[consentkit_consent_settings]</code> <?php esc_html_e( '(solo stato consenso + pulsante).', 'consentkit' ); ?>
 	</p>
+	<?php
+	$consentkit_policy_page = ConsentKit_Policy_Page::existing_page();
+	$consentkit_policy_url  = $consentkit_policy_page
+		? get_edit_post_link( $consentkit_policy_page->ID, 'raw' )
+		: ConsentKit_Policy_Page::create_url();
+	?>
+	<p>
+		<a href="<?php echo esc_url( $consentkit_policy_url ); ?>" class="button">
+			<?php echo $consentkit_policy_page ? esc_html__( 'Apri la bozza Cookie Policy', 'consentkit' ) : esc_html__( 'Crea pagina Cookie Policy', 'consentkit' ); ?>
+		</a>
+		<span class="description">
+			<?php if ( $consentkit_policy_page ) : ?>
+				<?php esc_html_e( 'Bozza già creata: da rivedere e completare con i dati del titolare del sito prima di pubblicare.', 'consentkit' ); ?>
+			<?php else : ?>
+				<?php esc_html_e( 'Crea una bozza pre-compilata (con questo shortcode già inserito) da completare con i dati del titolare del sito prima di pubblicare.', 'consentkit' ); ?>
+			<?php endif; ?>
+		</span>
+	</p>
+	<p>
+		<a href="<?php echo esc_url( ConsentKit_Policy_Page::update_date_url() ); ?>" class="button">
+			<?php esc_html_e( 'Aggiorna data ultima modifica', 'consentkit' ); ?>
+		</a>
+		<span class="description">
+			<?php
+			/* translators: %s: data corrente di "ultima modifica" mostrata dallo shortcode [consentkit_last_updated]. */
+			printf( esc_html__( 'Attualmente mostrata come: %s. Usalo quando pubblichi modifiche sostanziali alla policy.', 'consentkit' ), '<strong>' . esc_html( ConsentKit_Policy_Page::formatted_date() ) . '</strong>' );
+			?>
+		</span>
+	</p>
 </div>
 
 <table class="widefat striped consentkit-cookies">
