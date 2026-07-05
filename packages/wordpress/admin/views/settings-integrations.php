@@ -12,6 +12,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $consentkit_opt = CONSENTKIT_OPTION;
 ?>
+<p class="description">
+	<?php esc_html_e( 'Attiva qui solo gli strumenti che usi davvero: ogni script si carica solo dopo il consenso appropriato (o coi default corretti, per il Consent Mode). Attiva sempre "Google Consent Mode v2" se usi Google Ads o Analytics; il GTM ID va compilato solo se GTM non è già installato altrove nel sito.', 'consentkit' ); ?>
+</p>
 <table class="form-table" role="presentation">
 	<tr>
 		<th scope="row"><?php esc_html_e( 'Google Consent Mode v2', 'consentkit' ); ?></th>
