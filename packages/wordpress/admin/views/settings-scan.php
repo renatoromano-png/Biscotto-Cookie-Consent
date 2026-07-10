@@ -21,24 +21,24 @@ $consentkit_last_at = isset( $consentkit_last['scanned_at'] ) ? $consentkit_last
 ?>
 <div class="consentkit-scan">
 	<p class="description">
-		<?php esc_html_e( 'Lo scanner analizza le pagine indicate lato server (veloce) e, in più, carica la homepage in un iframe nascosto (solo per te, come amministratore) per rilevare anche i servizi iniettati via JavaScript. Rileva cookie e domini di terze parti e propone le righe da aggiungere al registro: la revisione e il salvataggio restano a te.', 'consentkit' ); ?>
+		<?php esc_html_e( 'Lo scanner analizza le pagine indicate lato server (veloce) e, in più, carica la homepage in un iframe nascosto (solo per te, come amministratore) per rilevare anche i servizi iniettati via JavaScript. Rileva cookie e domini di terze parti e propone le righe da aggiungere al registro: la revisione e il salvataggio restano a te.', 'biscotto' ); ?>
 	</p>
 
 	<table class="form-table" role="presentation">
 		<tr>
-			<th scope="row"><label for="ck-scan-urls"><?php esc_html_e( 'URL da scansionare', 'consentkit' ); ?></label></th>
+			<th scope="row"><label for="biscotto-scan-urls"><?php esc_html_e( 'URL da scansionare', 'biscotto' ); ?></label></th>
 			<td>
-				<textarea id="ck-scan-urls" rows="5" class="large-text code"><?php echo esc_textarea( $consentkit_urls_text ); ?></textarea>
+				<textarea id="biscotto-scan-urls" rows="5" class="large-text code"><?php echo esc_textarea( $consentkit_urls_text ); ?></textarea>
 				<p class="description">
-					<?php esc_html_e( 'Un URL per riga, massimo 10. La homepage intercetta già ciò che viene caricato a livello di sito (header e footer: font, Google Analytics, GTM, pixel) e copre la gran parte dei casi. Aggiungi altre pagine solo se hanno embed specifici (es. Google Maps nei Contatti, un articolo con YouTube): gli stessi servizi si ripetono su tutte le pagine, quindi non serve scansionare tutto il sito.', 'consentkit' ); ?>
+					<?php esc_html_e( 'Un URL per riga, massimo 10. La homepage intercetta già ciò che viene caricato a livello di sito (header e footer: font, Google Analytics, GTM, pixel) e copre la gran parte dei casi. Aggiungi altre pagine solo se hanno embed specifici (es. Google Maps nei Contatti, un articolo con YouTube): gli stessi servizi si ripetono su tutte le pagine, quindi non serve scansionare tutto il sito.', 'biscotto' ); ?>
 				</p>
 			</td>
 		</tr>
 	</table>
 
 	<p>
-		<button type="button" class="button button-primary" id="ck-scan-start"><?php esc_html_e( 'Scansiona ora', 'consentkit' ); ?></button>
-		<span id="ck-scan-status" class="ck-scan-status" aria-live="polite"></span>
+		<button type="button" class="button button-primary" id="biscotto-scan-start"><?php esc_html_e( 'Scansiona ora', 'biscotto' ); ?></button>
+		<span id="biscotto-scan-status" class="biscotto-scan-status" aria-live="polite"></span>
 	</p>
 
 	<?php
@@ -52,54 +52,54 @@ $consentkit_last_at = isset( $consentkit_last['scanned_at'] ) ? $consentkit_last
 		<p class="description">
 			<?php
 			/* translators: %s: data e ora dell'ultima scansione (fuso del sito). */
-			printf( esc_html__( 'Ultima scansione: %s.', 'consentkit' ), esc_html( $consentkit_last_local ) );
+			printf( esc_html__( 'Ultima scansione: %s.', 'biscotto' ), esc_html( $consentkit_last_local ) );
 			?>
 		</p>
 	<?php endif; ?>
 
-	<div id="ck-scan-results" hidden>
-		<h2><?php esc_html_e( 'Risultati', 'consentkit' ); ?></h2>
-		<p class="description"><?php esc_html_e( 'Seleziona le righe da aggiungere al registro e verifica la categoria proposta. Le voci già presenti nel registro non vengono duplicate.', 'consentkit' ); ?></p>
+	<div id="biscotto-scan-results" hidden>
+		<h2><?php esc_html_e( 'Risultati', 'biscotto' ); ?></h2>
+		<p class="description"><?php esc_html_e( 'Seleziona le righe da aggiungere al registro e verifica la categoria proposta. Le voci già presenti nel registro non vengono duplicate.', 'biscotto' ); ?></p>
 		<table class="widefat striped">
 			<thead>
 				<tr>
-					<th class="check-column"><input type="checkbox" id="ck-scan-checkall" /></th>
-					<th><?php esc_html_e( 'Nome / Dominio', 'consentkit' ); ?></th>
-					<th><?php esc_html_e( 'Servizio', 'consentkit' ); ?></th>
-					<th><?php esc_html_e( 'Durata', 'consentkit' ); ?></th>
-					<th><?php esc_html_e( 'Categoria', 'consentkit' ); ?></th>
-					<th><?php esc_html_e( 'Origine', 'consentkit' ); ?></th>
+					<th class="check-column"><input type="checkbox" id="biscotto-scan-checkall" /></th>
+					<th><?php esc_html_e( 'Nome / Dominio', 'biscotto' ); ?></th>
+					<th><?php esc_html_e( 'Servizio', 'biscotto' ); ?></th>
+					<th><?php esc_html_e( 'Durata', 'biscotto' ); ?></th>
+					<th><?php esc_html_e( 'Categoria', 'biscotto' ); ?></th>
+					<th><?php esc_html_e( 'Origine', 'biscotto' ); ?></th>
 				</tr>
 			</thead>
-			<tbody id="ck-scan-rows"></tbody>
+			<tbody id="biscotto-scan-rows"></tbody>
 		</table>
 		<p>
-			<button type="button" class="button" id="ck-scan-enrich"><?php esc_html_e( 'Arricchisci dal database', 'consentkit' ); ?></button>
-			<span id="ck-scan-enrich-status" class="ck-scan-status" aria-live="polite"></span>
+			<button type="button" class="button" id="biscotto-scan-enrich"><?php esc_html_e( 'Arricchisci dal database', 'biscotto' ); ?></button>
+			<span id="biscotto-scan-enrich-status" class="biscotto-scan-status" aria-live="polite"></span>
 		</p>
-		<p class="description"><?php esc_html_e( 'Completa servizio, categoria, durata e link privacy usando Open Cookie Database incluso nel plugin (licenza Apache-2.0, nessuna chiamata esterna). Non sovrascrive mai un campo già compilato.', 'consentkit' ); ?></p>
+		<p class="description"><?php esc_html_e( 'Completa servizio, categoria, durata e link privacy usando Open Cookie Database incluso nel plugin (licenza Apache-2.0, nessuna chiamata esterna). Non sovrascrive mai un campo già compilato.', 'biscotto' ); ?></p>
 		<p>
-			<button type="button" class="button button-primary" id="ck-scan-import"><?php esc_html_e( 'Aggiungi i selezionati al registro', 'consentkit' ); ?></button>
-			<span id="ck-scan-import-status" class="ck-scan-status" aria-live="polite"></span>
+			<button type="button" class="button button-primary" id="biscotto-scan-import"><?php esc_html_e( 'Aggiungi i selezionati al registro', 'biscotto' ); ?></button>
+			<span id="biscotto-scan-import-status" class="biscotto-scan-status" aria-live="polite"></span>
 		</p>
 	</div>
 
 	<hr />
-	<h2><?php esc_html_e( 'Database cookie incluso', 'consentkit' ); ?></h2>
+	<h2><?php esc_html_e( 'Database cookie incluso', 'biscotto' ); ?></h2>
 	<p class="description">
 		<?php
 		printf(
 			/* translators: %s: data dello snapshot del database bundlato (AAAA-MM-GG). */
-			esc_html__( 'Il plugin include una copia locale di Open Cookie Database (licenza Apache-2.0), aggiornata al %s. Usarla non invia alcun dato del tuo sito.', 'consentkit' ),
+			esc_html__( 'Il plugin include una copia locale di Open Cookie Database (licenza Apache-2.0), aggiornata al %s. Usarla non invia alcun dato del tuo sito.', 'biscotto' ),
 			esc_html( ConsentKit_Cookie_Database::SNAPSHOT_DATE )
 		);
 		?>
 	</p>
 	<p>
-		<button type="button" class="button" id="ck-scan-dbcheck"><?php esc_html_e( 'Controlla aggiornamenti database', 'consentkit' ); ?></button>
-		<span id="ck-scan-dbcheck-status" class="ck-scan-status" aria-live="polite"></span>
+		<button type="button" class="button" id="biscotto-scan-dbcheck"><?php esc_html_e( 'Controlla aggiornamenti database', 'biscotto' ); ?></button>
+		<span id="biscotto-scan-dbcheck-status" class="biscotto-scan-status" aria-live="polite"></span>
 	</p>
-	<p class="description"><?php esc_html_e( "Contatta l'API pubblica di GitHub (api.github.com) solo quando clicchi questo pulsante, per verificare la data dell'ultimo aggiornamento del dataset upstream. Nessun aggiornamento automatico, nessun dato del sito inviato.", 'consentkit' ); ?></p>
+	<p class="description"><?php esc_html_e( "Contatta l'API pubblica di GitHub (api.github.com) solo quando clicchi questo pulsante, per verificare la data dell'ultimo aggiornamento del dataset upstream. Nessun aggiornamento automatico, nessun dato del sito inviato.", 'biscotto' ); ?></p>
 
-	<div id="ck-scan-frames" style="position:absolute;width:0;height:0;overflow:hidden;left:-9999px;" aria-hidden="true"></div>
+	<div id="biscotto-scan-frames" style="position:absolute;width:0;height:0;overflow:hidden;left:-9999px;" aria-hidden="true"></div>
 </div>

@@ -1,5 +1,5 @@
 /**
- * ConsentKit — Admin scan orchestrator (roadmap §14).
+ * Biscotto — Admin scan orchestrator (roadmap §14).
  * Scan ibrido: (1) analisi veloce lato server di tutti gli URL (endpoint
  * /scan/server, no rendering); (2) pass a runtime via iframe nascosto SOLO
  * sulla homepage per i servizi iniettati via JavaScript. I risultati vengono
@@ -8,7 +8,7 @@
 ( function () {
 	'use strict';
 
-	var cfg = window.ckScan || {};
+	var cfg = window.consentkitScan || {};
 	var rowsData = [];
 
 	function $( id ) { return document.getElementById( id ); }
@@ -51,7 +51,7 @@
 
 			function onMessage( e ) {
 				if ( e.origin !== cfg.origin ) { return; }
-				if ( !e.data || !e.data.__ckScan || !e.data.finding ) { return; }
+				if ( !e.data || !e.data.__biscottoScan || !e.data.finding ) { return; }
 				if ( e.source !== frame.contentWindow ) { return; }
 				finish( e.data.finding );
 			}
@@ -61,7 +61,7 @@
 			timer = window.setTimeout( function () { finish( null ); }, ( cfg.timeoutMs || 12000 ) );
 
 			frame.src = target;
-			$( 'ck-scan-frames' ).appendChild( frame );
+			$( 'biscotto-scan-frames' ).appendChild( frame );
 		} );
 	}
 
@@ -88,7 +88,7 @@
 
 	function renderRows( suggestions ) {
 		rowsData = suggestions || [];
-		var tbody = $( 'ck-scan-rows' );
+		var tbody = $( 'biscotto-scan-rows' );
 		tbody.innerHTML = '';
 
 		if ( !rowsData.length ) {
@@ -109,7 +109,7 @@
 			cb.type = 'checkbox';
 			cb.checked = true;
 			cb.setAttribute( 'data-i', i );
-			cb.className = 'ck-scan-pick';
+			cb.className = 'biscotto-scan-pick';
 			tdCheck.appendChild( cb );
 
 			var tdName = document.createElement( 'td' );
@@ -133,7 +133,7 @@
 			var tdCat = document.createElement( 'td' );
 			var sel = document.createElement( 'select' );
 			sel.setAttribute( 'data-i', i );
-			sel.className = 'ck-scan-cat';
+			sel.className = 'biscotto-scan-cat';
 			Object.keys( cfg.categories ).forEach( function ( slug ) {
 				var opt = document.createElement( 'option' );
 				opt.value = slug;
@@ -155,13 +155,13 @@
 			tbody.appendChild( tr );
 		} );
 
-		$( 'ck-scan-results' ).hidden = false;
+		$( 'biscotto-scan-results' ).hidden = false;
 	}
 
 	function startScan() {
-		var btn = $( 'ck-scan-start' );
-		var status = $( 'ck-scan-status' );
-		var allUrls = ( $( 'ck-scan-urls' ).value || '' )
+		var btn = $( 'biscotto-scan-start' );
+		var status = $( 'biscotto-scan-status' );
+		var allUrls = ( $( 'biscotto-scan-urls' ).value || '' )
 			.split( '\n' )
 			.map( function ( s ) { return s.trim(); } )
 			.filter( function ( s ) { return s.length; } );
@@ -209,14 +209,14 @@
 	}
 
 	function importSelected() {
-		var status = $( 'ck-scan-import-status' );
+		var status = $( 'biscotto-scan-import-status' );
 		var picks = [];
-		Array.prototype.forEach.call( document.querySelectorAll( '.ck-scan-pick' ), function ( cb ) {
+		Array.prototype.forEach.call( document.querySelectorAll( '.biscotto-scan-pick' ), function ( cb ) {
 			if ( !cb.checked ) { return; }
 			var idx = parseInt( cb.getAttribute( 'data-i' ), 10 );
 			var row = rowsData[ idx ];
 			if ( !row ) { return; }
-			var sel = document.querySelector( '.ck-scan-cat[data-i="' + idx + '"]' );
+			var sel = document.querySelector( '.biscotto-scan-cat[data-i="' + idx + '"]' );
 			picks.push( {
 				name: row.name,
 				service: row.service,
@@ -238,7 +238,7 @@
 	}
 
 	function enrichSuggestions() {
-		var status = $( 'ck-scan-enrich-status' );
+		var status = $( 'biscotto-scan-enrich-status' );
 		if ( !rowsData.length ) { return; }
 		setStatus( status, cfg.i18n.enriching );
 		rest( cfg.enrichUrl, { suggestions: rowsData } )
@@ -258,7 +258,7 @@
 	}
 
 	function checkDbVersion() {
-		var status = $( 'ck-scan-dbcheck-status' );
+		var status = $( 'biscotto-scan-dbcheck-status' );
 		status.textContent = '';
 		setStatus( status, cfg.i18n.checkingDb );
 		fetch( cfg.dbVersionUrl, {
@@ -288,14 +288,14 @@
 	}
 
 	document.addEventListener( 'DOMContentLoaded', function () {
-		var start = $( 'ck-scan-start' );
+		var start = $( 'biscotto-scan-start' );
 		if ( !start ) { return; }
 		start.addEventListener( 'click', startScan );
-		$( 'ck-scan-import' ).addEventListener( 'click', importSelected );
-		$( 'ck-scan-enrich' ).addEventListener( 'click', enrichSuggestions );
-		$( 'ck-scan-dbcheck' ).addEventListener( 'click', checkDbVersion );
-		$( 'ck-scan-checkall' ).addEventListener( 'change', function ( e ) {
-			Array.prototype.forEach.call( document.querySelectorAll( '.ck-scan-pick' ), function ( cb ) {
+		$( 'biscotto-scan-import' ).addEventListener( 'click', importSelected );
+		$( 'biscotto-scan-enrich' ).addEventListener( 'click', enrichSuggestions );
+		$( 'biscotto-scan-dbcheck' ).addEventListener( 'click', checkDbVersion );
+		$( 'biscotto-scan-checkall' ).addEventListener( 'change', function ( e ) {
+			Array.prototype.forEach.call( document.querySelectorAll( '.biscotto-scan-pick' ), function ( cb ) {
 				cb.checked = e.target.checked;
 			} );
 		} );

@@ -51,9 +51,12 @@ class ConsentKit_Api {
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( $this, 'log_consent' ),
-				// Endpoint pubblico (visitatori non autenticati): la protezione vera
-					// è nel callback (nonce nel body + allowlist azioni + flag log_enabled).
-					'permission_callback' => '__return_true',
+				// Endpoint intenzionalmente pubblico: lo chiamano i visitatori non
+				// autenticati (via navigator.sendBeacon) per registrare il proprio
+				// consenso. La protezione è nel callback stesso: nonce nel body,
+				// allowlist delle azioni e flag log_enabled. Per questo il
+				// permission_callback è __return_true (pubblico by design).
+				'permission_callback' => '__return_true',
 			)
 		);
 	}

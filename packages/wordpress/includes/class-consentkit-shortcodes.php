@@ -33,10 +33,10 @@ class ConsentKit_Shortcodes {
 	 */
 	private function category_labels() {
 		return array(
-			'necessary'   => __( 'Necessari', 'consentkit' ),
-			'analytics'   => __( 'Analytics', 'consentkit' ),
-			'marketing'   => __( 'Marketing', 'consentkit' ),
-			'preferences' => __( 'Preferenze', 'consentkit' ),
+			'necessary'   => __( 'Necessari', 'biscotto' ),
+			'analytics'   => __( 'Analytics', 'biscotto' ),
+			'marketing'   => __( 'Marketing', 'biscotto' ),
+			'preferences' => __( 'Preferenze', 'biscotto' ),
 		);
 	}
 
@@ -57,7 +57,7 @@ class ConsentKit_Shortcodes {
 			return;
 		}
 
-		// Dipende dal core (espone window.ConsentKit + evento ck:consent).
+		// Dipende dal core (espone window.Biscotto + evento biscotto:consent).
 		wp_enqueue_script(
 			'consentkit-cookie-policy',
 			CONSENTKIT_URL . 'public/js/cookie-policy.js',
@@ -67,10 +67,10 @@ class ConsentKit_Shortcodes {
 		);
 		wp_localize_script(
 			'consentkit-cookie-policy',
-			'ckPolicy',
+			'consentkitPolicy',
 			array(
-				'granted'    => __( 'Attivo', 'consentkit' ),
-				'denied'     => __( 'Non attivo', 'consentkit' ),
+				'granted'    => __( 'Attivo', 'biscotto' ),
+				'denied'     => __( 'Non attivo', 'biscotto' ),
 				'categories' => $this->category_labels(),
 			)
 		);
@@ -97,7 +97,7 @@ class ConsentKit_Shortcodes {
 		}
 
 		// Stile Complianz: categoria → servizio (con link informativa) → cookie.
-		$other = __( 'Altri', 'consentkit' );
+		$other = __( 'Altri', 'biscotto' );
 		$tree  = array();
 		foreach ( array_keys( $labels ) as $cat ) {
 			$tree[ $cat ] = array();
@@ -110,13 +110,13 @@ class ConsentKit_Shortcodes {
 		}
 
 		ob_start();
-		echo '<div class="ck-cookie-table">';
+		echo '<div class="biscotto-cookie-table">';
 		foreach ( $tree as $cat => $services ) {
 			if ( empty( $services ) ) {
 				continue;
 			}
-			echo '<section class="ck-cat">';
-			echo '<h3 class="ck-cat-title">' . esc_html( $labels[ $cat ] ) . '</h3>';
+			echo '<section class="biscotto-cat">';
+			echo '<h3 class="biscotto-cat-title">' . esc_html( $labels[ $cat ] ) . '</h3>';
 			foreach ( $services as $service => $rows ) {
 				// Link informativa: il primo disponibile tra i cookie del servizio.
 				$policy = '';
@@ -126,15 +126,15 @@ class ConsentKit_Shortcodes {
 						break;
 					}
 				}
-				echo '<div class="ck-service">';
-				echo '<h4 class="ck-service-name">' . esc_html( $service );
+				echo '<div class="biscotto-service">';
+				echo '<h4 class="biscotto-service-name">' . esc_html( $service );
 				if ( $policy ) {
-					echo ' <a class="ck-service-link" href="' . esc_url( $policy ) . '" target="_blank" rel="noopener nofollow">' . esc_html__( 'Informativa', 'consentkit' ) . '</a>';
+					echo ' <a class="biscotto-service-link" href="' . esc_url( $policy ) . '" target="_blank" rel="noopener nofollow">' . esc_html__( 'Informativa', 'biscotto' ) . '</a>';
 				}
 				echo '</h4>';
-				echo '<table class="ck-table"><thead><tr>';
-				echo '<th>' . esc_html__( 'Nome', 'consentkit' ) . '</th>';
-				echo '<th>' . esc_html__( 'Durata', 'consentkit' ) . '</th>';
+				echo '<table class="biscotto-table"><thead><tr>';
+				echo '<th>' . esc_html__( 'Nome', 'biscotto' ) . '</th>';
+				echo '<th>' . esc_html__( 'Durata', 'biscotto' ) . '</th>';
 				echo '</tr></thead><tbody>';
 				foreach ( $rows as $r ) {
 					$name     = isset( $r['name'] ) ? $r['name'] : '';
@@ -163,23 +163,23 @@ class ConsentKit_Shortcodes {
 	public function consent_settings( $atts ) {
 		$atts = shortcode_atts(
 			array(
-				'button' => __( 'Gestisci le tue scelte', 'consentkit' ),
-				'title'  => __( 'Le tue preferenze attuali', 'consentkit' ),
+				'button' => __( 'Gestisci le tue scelte', 'biscotto' ),
+				'title'  => __( 'Le tue preferenze attuali', 'biscotto' ),
 			),
 			$atts,
 			'consentkit_consent_settings'
 		);
 
 		ob_start();
-		echo '<div class="ck-consent-settings">';
+		echo '<div class="biscotto-consent-settings">';
 		if ( '' !== $atts['title'] ) {
-			echo '<h3 class="ck-cat-title">' . esc_html( $atts['title'] ) . '</h3>';
+			echo '<h3 class="biscotto-cat-title">' . esc_html( $atts['title'] ) . '</h3>';
 		}
-		// Riempito via JS al load e ad ogni evento ck:consent. Fallback no-JS sotto.
-		echo '<ul class="ck-consent-state" data-ck-consent-state>';
-		echo '<li>' . esc_html__( 'Attiva JavaScript per vedere e modificare le tue scelte.', 'consentkit' ) . '</li>';
+		// Riempito via JS al load e ad ogni evento biscotto:consent. Fallback no-JS sotto.
+		echo '<ul class="biscotto-consent-state" data-biscotto-consent-state>';
+		echo '<li>' . esc_html__( 'Attiva JavaScript per vedere e modificare le tue scelte.', 'biscotto' ) . '</li>';
 		echo '</ul>';
-		echo '<button type="button" class="ck-policy-manage">' . esc_html( $atts['button'] ) . '</button>';
+		echo '<button type="button" class="biscotto-policy-manage">' . esc_html( $atts['button'] ) . '</button>';
 		echo '</div>';
 
 		return (string) ob_get_clean();

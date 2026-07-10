@@ -1,6 +1,6 @@
 <?php
 /**
- * Frontend: Consent Mode default nel <head>, enqueue core JS/CSS, ckConfig.
+ * Frontend: Consent Mode default nel <head>, enqueue core JS/CSS, biscottoConfig.
  *
  * @package ConsentKit
  */
@@ -12,36 +12,53 @@ if ( ! defined( 'ABSPATH' ) ) {
 class ConsentKit_Frontend {
 
 	public function __construct() {
-		// Consent Mode v2 default + GTM: PRIMA di tutto nel <head> (§13.7).
-		add_action( 'wp_head', array( $this, 'print_head_snippets' ), 1 );
-		// Core JS/CSS.
+		// Consent Mode v2 default + GTM nel <head> (§13.7) e core JS/CSS: tutto
+		// via wp_enqueue_scripts (niente <script> stampati a mano).
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 	}
 
 	/**
-	 * Stampa, in cima al <head>, il Consent Mode v2 default (denied) e — se
-	 * configurato — lo snippet GTM subito dopo. L'ordine è vincolante.
+	 * Accoda nel <head> il Consent Mode v2 default (denied) e — se configurato —
+	 * lo snippet GTM subito dopo. Entrambi sono inline via wp_add_inline_script
+	 * su handle registrati senza file (src false), così non stampiamo mai tag
+	 * <script> a mano. L'ordine (default PRIMA di GTM) è garantito dalla dipendenza.
+	 *
+	 * @param array $s Impostazioni.
 	 */
-	public function print_head_snippets() {
-		$s = ConsentKit::get_settings();
+	private function enqueue_head_snippets( $s ) {
+		$consent_mode = ! empty( $s['google_consent_mode'] );
+		$gtm_id       = isset( $s['gtm_id'] ) ? trim( $s['gtm_id'] ) : '';
+		$gtm          = ! empty( $s['gtm'] ) && '' !== $gtm_id;
 
-		if ( empty( $s['google_consent_mode'] ) && empty( $s['gtm'] ) ) {
+		if ( ! $consent_mode && ! $gtm ) {
 			return;
 		}
 
-		if ( ! empty( $s['google_consent_mode'] ) ) {
-			echo "<!-- ConsentKit: Google Consent Mode v2 default -->\n";
-			echo "<script>\n";
-			echo "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}\n";
-			echo "gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',personalization_storage:'denied',functionality_storage:'granted',security_storage:'granted',wait_for_update:500});\n";
-			echo "</script>\n";
+		// Consent Mode v2 default (denied): inline nel <head>, prima di GTM.
+		if ( $consent_mode ) {
+			wp_register_script( 'consentkit-consent-mode', false, array(), CONSENTKIT_VERSION, false );
+			wp_enqueue_script( 'consentkit-consent-mode' );
+			wp_add_inline_script(
+				'consentkit-consent-mode',
+				"window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}"
+				. "gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',personalization_storage:'denied',functionality_storage:'granted',security_storage:'granted',wait_for_update:500});"
+			);
 		}
 
-		$gtm_id = isset( $s['gtm_id'] ) ? trim( $s['gtm_id'] ) : '';
-		if ( ! empty( $s['gtm'] ) && '' !== $gtm_id ) {
+		// Google Tag Manager: loader inline nel <head>. Se il Consent Mode default
+		// è attivo, dipende da quello così viene stampato DOPO (ordine vincolante).
+		if ( $gtm ) {
 			$gtm_id = preg_replace( '/[^A-Z0-9\-]/', '', strtoupper( $gtm_id ) );
-			echo "<!-- ConsentKit: Google Tag Manager -->\n";
-			echo "<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','" . esc_js( $gtm_id ) . "');</script>\n";
+			$deps   = $consent_mode ? array( 'consentkit-consent-mode' ) : array();
+			wp_register_script( 'consentkit-gtm', false, $deps, CONSENTKIT_VERSION, false );
+			wp_enqueue_script( 'consentkit-gtm' );
+			wp_add_inline_script(
+				'consentkit-gtm',
+				"(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});"
+				. "var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;"
+				. "j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})"
+				. "(window,document,'script','dataLayer','" . esc_js( $gtm_id ) . "');"
+			);
 		}
 	}
 
@@ -50,6 +67,9 @@ class ConsentKit_Frontend {
 	 */
 	public function enqueue_assets() {
 		$s = ConsentKit::get_settings();
+
+		// Consent Mode v2 default + GTM nel <head>, prima del manager e dei tag.
+		$this->enqueue_head_snippets( $s );
 
 		wp_enqueue_style(
 			'consentkit-banner',
@@ -75,10 +95,10 @@ class ConsentKit_Frontend {
 		}
 
 		$ck_vars = array(
-			'--ck-primary'          => $primary,
-			'--ck-primary-contrast' => $primary_contrast,
-			'--ck-bg'               => $bg,
-			'--ck-text'             => $text,
+			'--biscotto-primary'          => $primary,
+			'--biscotto-primary-contrast' => $primary_contrast,
+			'--biscotto-bg'               => $bg,
+			'--biscotto-text'             => $text,
 		);
 		$ck_css = '';
 		foreach ( $ck_vars as $ck_var => $ck_value ) {
@@ -99,9 +119,9 @@ class ConsentKit_Frontend {
 		);
 
 		// wp_add_inline_script (non wp_localize_script): preserva booleani/int/null
-		// nell'oggetto ckConfig. Deve essere stampato PRIMA del core.
+		// nell'oggetto biscottoConfig. Deve essere stampato PRIMA del core.
 		$config = wp_json_encode( $this->build_config( $s ) );
-		wp_add_inline_script( 'consentkit-manager', 'window.ckConfig = ' . $config . ';', 'before' );
+		wp_add_inline_script( 'consentkit-manager', 'window.biscottoConfig = ' . $config . ';', 'before' );
 	}
 
 	/**
@@ -134,7 +154,7 @@ class ConsentKit_Frontend {
 	}
 
 	/**
-	 * Costruisce l'oggetto window.ckConfig consumato dal core JS.
+	 * Costruisce l'oggetto window.biscottoConfig consumato dal core JS.
 	 *
 	 * @param array $s Impostazioni.
 	 * @return array
@@ -165,13 +185,13 @@ class ConsentKit_Frontend {
 				'closeLabel'     => $s['close_label'],
 				'reviewLabel'    => $s['review_label'],
 				'prefsTitle'     => $s['prefs_title'],
-				'privacyLabel'   => __( 'Privacy policy', 'consentkit' ),
-				'cookieLabel'    => __( 'Cookie policy', 'consentkit' ),
-				'necessaryLabel' => __( 'Necessari (sempre attivi)', 'consentkit' ),
+				'privacyLabel'   => __( 'Privacy policy', 'biscotto' ),
+				'cookieLabel'    => __( 'Cookie policy', 'biscotto' ),
+				'necessaryLabel' => __( 'Necessari (sempre attivi)', 'biscotto' ),
 				'categoryLabels' => array(
-					'analytics'   => __( 'Analytics', 'consentkit' ),
-					'marketing'   => __( 'Marketing', 'consentkit' ),
-					'preferences' => __( 'Preferenze', 'consentkit' ),
+					'analytics'   => __( 'Analytics', 'biscotto' ),
+					'marketing'   => __( 'Marketing', 'biscotto' ),
+					'preferences' => __( 'Preferenze', 'biscotto' ),
 				),
 			),
 		);
