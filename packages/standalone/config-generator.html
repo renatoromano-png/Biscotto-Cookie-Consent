@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ConsentKit — Generatore configurazione (standalone)</title>
+<title>Biscotto — Generatore configurazione (standalone)</title>
 <style>
   body { font-family: system-ui, sans-serif; max-width: 760px; margin: 40px auto; padding: 0 16px; color: #1f2937; }
   h1 { font-size: 22px; } h2 { font-size: 16px; margin-top: 28px; }
@@ -17,7 +17,7 @@
 </style>
 </head>
 <body>
-<h1>ConsentKit — Generatore configurazione (siti non-WordPress)</h1>
+<h1>Biscotto — Generatore configurazione (siti non-WordPress)</h1>
 <p class="desc">Compila i campi e copia lo snippet generato nel tuo sito. Vedi il README per dove posizionarlo.</p>
 
 <h2>Generale</h2>
@@ -54,7 +54,7 @@ function chk(id){ return document.getElementById(id).checked; }
 
 function gen() {
   var head =
-'<!-- ConsentKit: Consent Mode v2 default (PRIMA di GTM) -->\n' +
+'<!-- Biscotto: Consent Mode v2 default (PRIMA di GTM) -->\n' +
 '<script>\n' +
 'window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}\n' +
 "gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',personalization_storage:'denied',functionality_storage:'granted',security_storage:'granted',wait_for_update:500});\n" +
@@ -93,9 +93,9 @@ function gen() {
   };
 
   var body =
-'<link rel="stylesheet" href="/path/to/consentkit/banner.css">\n' +
-'<script>window.ckConfig = ' + JSON.stringify(cfg, null, 2) + ';<\/script>\n' +
-'<script src="/path/to/consentkit/consentkit.js" defer><\/script>';
+'<link rel="stylesheet" href="/path/to/biscotto/banner.css">\n' +
+'<script>window.biscottoConfig = ' + JSON.stringify(cfg, null, 2) + ';<\/script>\n' +
+'<script src="/path/to/biscotto/biscotto.js" defer><\/script>';
 
   document.getElementById('outHead').textContent = head;
   document.getElementById('outBody').textContent = body;
