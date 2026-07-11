@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ConsentKit — Test prior blocking & consenso</title>
+<title>Biscotto — Test prior blocking & consenso</title>
 
 <!-- 1) Consent Mode v2 DEFAULT (prima di tutto, come in produzione) -->
 <script>
@@ -30,19 +30,19 @@ gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personali
 </head>
 <body>
 
-<h1>🧪 ConsentKit — Test prior blocking &amp; consenso</h1>
+<h1>🧪 Biscotto — Test prior blocking &amp; consenso</h1>
 <p>Pagina autonoma per verificare il <strong>core</strong> a rischio zero. Apri la console (F12) per i log. Usa una finestra anonima per partire pulito, oppure il pulsante <em>Reset</em>.</p>
 
 <div class="toolbar">
-  <button onclick="ConsentKit.open()">Apri preferenze</button>
-  <button class="secondary" onclick="ConsentKit.reset()">Reset (cancella consenso)</button>
+  <button onclick="Biscotto.open()">Apri preferenze</button>
+  <button class="secondary" onclick="Biscotto.reset()">Reset (cancella consenso)</button>
 </div>
 
 <h2>Esiti attesi</h2>
 <div class="card">
   <ul>
     <li>All'avvio (senza scelta): i 3 tag sotto restano <strong>spenti</strong>, Consent Mode tutto <code>denied</code>.</li>
-    <li>Dopo <strong>Accetta tutto</strong>: tutti e 3 si accendono, Consent Mode → <code>granted</code>, evento <code>ck_consent_update</code> nel dataLayer.</li>
+    <li>Dopo <strong>Accetta tutto</strong>: tutti e 3 si accendono, Consent Mode → <code>granted</code>, evento <code>biscotto_consent_update</code> nel dataLayer.</li>
     <li>Dopo <strong>Rifiuta</strong> o la <strong>X</strong>: nessun tag parte.</li>
     <li>Da <strong>Gestisci preferenze</strong>: accendi solo le categorie scelte.</li>
     <li>Ricaricando: il banner <strong>non</strong> riappare finché il consenso è valido.</li>
@@ -57,34 +57,34 @@ gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personali
   <div class="card">Cookie scritti dai tag: <span id="s-cookies">—</span></div>
 </div>
 
-<h2>Consenso corrente (<code>ConsentKit.getConsent()</code>)</h2>
+<h2>Consenso corrente (<code>Biscotto.getConsent()</code>)</h2>
 <pre id="out-consent">—</pre>
 
-<h2>localStorage <code>ck_consent</code></h2>
+<h2>localStorage <code>biscotto_consent</code></h2>
 <pre id="out-storage">—</pre>
 
 <h2>dataLayer (Consent Mode + eventi)</h2>
 <pre id="out-datalayer">—</pre>
 
 <!-- ============ TAG DI TEST BLOCCATI (prior blocking) ============ -->
-<!-- ConsentKit li attiva SOLO dopo l'opt-in della relativa categoria.
+<!-- Biscotto li attiva SOLO dopo l'opt-in della relativa categoria.
      In produzione qui ci sarebbero GA4, Google Ads, pixel, ecc. -->
 
-<script type="text/plain" data-ck-category="analytics">
+<script type="text/plain" data-biscotto-category="analytics">
   window.__ckTest = window.__ckTest || {};
   window.__ckTest.analytics = true;
   document.cookie = "ck_test_analytics=1; path=/; max-age=3600";
   console.log('%c[TEST] tag ANALYTICS attivato', 'color:#16a34a');
 </script>
 
-<script type="text/plain" data-ck-category="marketing">
+<script type="text/plain" data-biscotto-category="marketing">
   window.__ckTest = window.__ckTest || {};
   window.__ckTest.marketing = true;
   document.cookie = "ck_test_marketing=1; path=/; max-age=3600";
   console.log('%c[TEST] tag MARKETING attivato', 'color:#16a34a');
 </script>
 
-<script type="text/plain" data-ck-category="preferences">
+<script type="text/plain" data-biscotto-category="preferences">
   window.__ckTest = window.__ckTest || {};
   window.__ckTest.preferences = true;
   document.cookie = "ck_test_preferences=1; path=/; max-age=3600";
@@ -93,7 +93,7 @@ gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personali
 
 <!-- ============ CONFIG + CORE ============ -->
 <script>
-window.ckConfig = {
+window.biscottoConfig = {
   version: "1.0",
   policyVersion: "test-1",
   consentDuration: 365,
@@ -130,7 +130,7 @@ window.ckConfig = {
   }
 };
 </script>
-<script src="./consentkit.js"></script>
+<script src="./biscotto.js"></script>
 
 <!-- ============ CRUSCOTTO LIVE ============ -->
 <script>
@@ -150,9 +150,9 @@ window.ckConfig = {
     pill('s-preferences', !!t.preferences);
     document.getElementById('s-cookies').textContent = testCookies();
     document.getElementById('out-consent').textContent =
-      window.ConsentKit ? JSON.stringify(ConsentKit.getConsent(), null, 2) : '—';
+      window.Biscotto ? JSON.stringify(Biscotto.getConsent(), null, 2) : '—';
     document.getElementById('out-storage').textContent =
-      localStorage.getItem('ck_consent') || '(nessuno)';
+      localStorage.getItem('biscotto_consent') || '(nessuno)';
     var dl = (window.dataLayer || []).map(function (x) {
       return Array.isArray(x) || (x && x.length !== undefined && typeof x !== 'string')
         ? Array.prototype.slice.call(x) : x;

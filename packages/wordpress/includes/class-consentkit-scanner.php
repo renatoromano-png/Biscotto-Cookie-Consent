@@ -68,8 +68,8 @@ class ConsentKit_Scanner {
 
 		// Pre-grant: scritto PRIMA del manager (handle consentkit-manager, già
 		// accodato dal frontend) così init() lo legge come consenso valido.
-		$pre_grant = "(function(){try{window.__ckScanMode=true;var pv=(window.ckConfig&&window.ckConfig.policyVersion)||'1';"
-			. "localStorage.setItem('ck_consent',JSON.stringify({version:'scan',policyVersion:String(pv),"
+		$pre_grant = "(function(){try{window.__biscottoScanMode=true;var pv=(window.biscottoConfig&&window.biscottoConfig.policyVersion)||'1';"
+			. "localStorage.setItem('biscotto_consent',JSON.stringify({version:'scan',policyVersion:String(pv),"
 			. "timestamp:Math.floor(Date.now()/1000),action:'granted_all',"
 			. "categories:{necessary:true,analytics:true,marketing:true,preferences:true}}));}catch(e){}})();";
 		wp_add_inline_script( 'consentkit-manager', $pre_grant, 'before' );
@@ -180,7 +180,7 @@ class ConsentKit_Scanner {
 				array(
 					'timeout'     => 10,
 					'redirection' => 3,
-					'user-agent'  => 'ConsentKit-Scanner/' . CONSENTKIT_VERSION,
+					'user-agent'  => 'Biscotto-Scanner/' . CONSENTKIT_VERSION,
 				)
 			);
 			if ( is_wp_error( $resp ) ) {
@@ -452,7 +452,7 @@ class ConsentKit_Scanner {
 			$url,
 			array(
 				'timeout'    => 10,
-				'user-agent' => 'ConsentKit-Scanner/' . CONSENTKIT_VERSION,
+				'user-agent' => 'Biscotto-Scanner/' . CONSENTKIT_VERSION,
 				'headers'    => array( 'Accept' => 'application/vnd.github+json' ),
 			)
 		);
@@ -712,7 +712,7 @@ class ConsentKit_Scanner {
 			'pll_language'     => array( 'Polylang', 'preferences', '' ),
 			'woocommerce_'     => array( 'WooCommerce', 'necessary', '' ),
 			'wp_woocommerce_session' => array( 'WooCommerce', 'necessary', '' ),
-			'ck_consent'       => array( 'ConsentKit', 'necessary', '' ),
+			'biscotto_consent'       => array( 'Biscotto', 'necessary', '' ),
 		);
 
 		$lc = strtolower( $name );

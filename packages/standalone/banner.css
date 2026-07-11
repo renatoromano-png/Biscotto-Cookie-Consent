@@ -1,157 +1,247 @@
 /**
- * ConsentKit — Banner & preferenze (core)
- * Variabili tema personalizzabili via --ck-*. Mobile-first, responsive.
- * Parità Accetta/Rifiuta imposta dallo stile (§13.4): stessa classe .ck-btn-primary.
+ * Biscotto — Banner & preferenze (core)
+ * Variabili tema personalizzabili via --biscotto-*. Mobile-first, responsive.
+ * Parità Accetta/Rifiuta imposta dallo stile (§13.4): stessa classe .biscotto-btn-primary.
  */
 :root {
-  --ck-primary: #2563eb;
-  --ck-primary-contrast: #ffffff;
-  --ck-bg: #ffffff;
-  --ck-text: #1f2937;
-  --ck-muted: #6b7280;
-  --ck-border: #e5e7eb;
-  --ck-radius: 10px;
-  --ck-shadow: 0 -2px 24px rgba(0, 0, 0, .12);
-  --ck-z: 2147483000;
+  --biscotto-primary: #2563eb;
+  --biscotto-primary-contrast: #ffffff;
+  --biscotto-bg: #ffffff;
+  --biscotto-text: #1f2937;
+  --biscotto-muted: #6b7280;
+  --biscotto-border: #e5e7eb;
+  --biscotto-radius: 10px;
+  --biscotto-shadow: 0 -2px 24px rgba(0, 0, 0, .12);
+  --biscotto-z: 2147483000;
 }
 
-.ck-banner, .ck-overlay, .ck-review { box-sizing: border-box; }
-.ck-banner *, .ck-overlay * { box-sizing: border-box; }
+.biscotto-banner, .biscotto-overlay, .biscotto-review { box-sizing: border-box; }
+.biscotto-banner *, .biscotto-overlay * { box-sizing: border-box; }
 
 /* --- Banner --------------------------------------------------------------- */
-.ck-banner {
+.biscotto-banner {
   position: fixed;
-  z-index: var(--ck-z);
-  background: var(--ck-bg);
-  color: var(--ck-text);
-  border: 1px solid var(--ck-border);
-  box-shadow: var(--ck-shadow);
+  z-index: var(--biscotto-z);
+  background: var(--biscotto-bg);
+  color: var(--biscotto-text);
+  border: 1px solid var(--biscotto-border);
+  box-shadow: var(--biscotto-shadow);
   padding: 20px;
   font-family: inherit;
   font-size: 14px;
   line-height: 1.5;
 }
-.ck-bottom-bar { left: 0; right: 0; bottom: 0; border-left: 0; border-right: 0; border-bottom: 0; }
-.ck-modal {
+.biscotto-bottom-bar {
+  left: 0; right: 0; bottom: 0; border-left: 0; border-right: 0; border-bottom: 0;
+  display: flex; flex-direction: column; justify-content: center; gap: 14px;
+  min-height: 50vh; max-height: 90vh; overflow-y: auto;
+  padding: clamp(20px, 5vw, 40px);
+}
+/* Tipografia leggibile per la barra a piena larghezza (scala col viewport).
+   Selettore .biscotto-banner.biscotto-bottom-bar (specificita' 0,3,0) per battere le regole
+   base .biscotto-banner .biscotto-title/.biscotto-text definite piu' in basso nel file. */
+.biscotto-banner.biscotto-bottom-bar .biscotto-title { font-size: clamp(21px, 5.6vw, 28px); }
+.biscotto-banner.biscotto-bottom-bar .biscotto-text { font-size: clamp(17px, 4.6vw, 20px); line-height: 1.55; }
+.biscotto-banner.biscotto-bottom-bar .biscotto-link { font-size: clamp(14px, 3.6vw, 16px); }
+.biscotto-banner.biscotto-bottom-bar .biscotto-actions .biscotto-btn { font-size: clamp(17px, 4.4vw, 19px); padding: 13px 22px; }
+.biscotto-modal {
   left: 50%; bottom: 24px; transform: translateX(-50%);
   width: min(560px, calc(100% - 32px));
-  border-radius: var(--ck-radius);
+  border-radius: var(--biscotto-radius);
 }
-.ck-banner .ck-title { margin: 0 0 6px; font-size: 16px; font-weight: 700; }
-.ck-banner .ck-text { margin: 0 0 10px; color: var(--ck-text); }
+/* Riquadro compatto ancorato in basso a destra (desktop). */
+.biscotto-box-right {
+  right: 20px; bottom: 20px; left: auto;
+  width: min(400px, calc(100% - 32px));
+  border-radius: var(--biscotto-radius);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .18);
+}
+/* Pulsanti impilati a piena larghezza; "Gestisci preferenze" (link) va in fondo. */
+.biscotto-box-right .biscotto-actions { flex-direction: column; align-items: stretch; }
+.biscotto-box-right .biscotto-actions .biscotto-btn { width: 100%; text-align: center; }
+.biscotto-box-right .biscotto-actions .biscotto-btn-link { order: 1; }
 
-.ck-links { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 14px; }
-.ck-link { color: var(--ck-primary); text-decoration: underline; font-size: 13px; }
+/* Riquadro compatto ancorato in basso a sinistra (desktop). */
+.biscotto-box-left {
+  left: 20px; bottom: 20px; right: auto;
+  width: min(400px, calc(100% - 32px));
+  border-radius: var(--biscotto-radius);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .18);
+}
+.biscotto-box-left .biscotto-actions { flex-direction: column; align-items: stretch; }
+.biscotto-box-left .biscotto-actions .biscotto-btn { width: 100%; text-align: center; }
+.biscotto-box-left .biscotto-actions .biscotto-btn-link { order: 1; }
+.biscotto-banner .biscotto-title { margin: 0 0 6px; font-size: 16px; font-weight: 700; }
+.biscotto-banner .biscotto-text { margin: 0 0 10px; color: var(--biscotto-text); }
 
-.ck-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: flex-end; }
+.biscotto-links { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 14px; }
+.biscotto-link { color: var(--biscotto-primary); text-decoration: underline; font-size: 13px; }
 
-/* Pulsanti — Accetta e Rifiuta condividono .ck-btn-primary => parità grafica */
-.ck-btn {
+.biscotto-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: flex-end; }
+
+/* Pulsanti — Accetta e Rifiuta condividono .biscotto-btn-primary => parità grafica.
+   Doppia classe (.biscotto-btn.biscotto-btn-primary) + !important sulle proprietà colore:
+   il banner è iniettato in temi arbitrari che stilano i <button> (spesso a
+   contorno nel proprio colore) e sovrascriverebbero il riempimento. */
+.biscotto-btn {
   font: inherit; cursor: pointer; border-radius: 8px; padding: 10px 18px;
   border: 1px solid transparent; font-weight: 600; line-height: 1.2;
 }
-.ck-btn-primary {
-  background: var(--ck-primary); color: var(--ck-primary-contrast);
-  border-color: var(--ck-primary);
+.biscotto-btn.biscotto-btn-primary {
+  background: var(--biscotto-primary) !important;
+  color: var(--biscotto-primary-contrast) !important;
+  border: 1px solid var(--biscotto-primary) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
 }
-.ck-btn-primary:hover { filter: brightness(.95); }
-.ck-btn-link {
-  background: transparent; color: var(--ck-muted); border: 0;
+.biscotto-btn.biscotto-btn-primary:hover { filter: brightness(.95); }
+.biscotto-btn.biscotto-btn-link {
+  background: transparent !important;
+  color: var(--biscotto-muted) !important;
+  border: 0 !important;
   text-decoration: underline; padding: 10px 8px; font-weight: 500;
 }
-.ck-btn-link:hover { color: var(--ck-text); }
+.biscotto-btn.biscotto-btn-link:hover { color: var(--biscotto-text) !important; }
 
-/* X di chiusura — evidenza grafica pari ai pulsanti (§13.1) */
-.ck-close {
+/* X di chiusura — evidenza grafica pari ai pulsanti (§13.1).
+   !important sui colori per difendersi dagli stili <button> del tema. */
+.biscotto-close {
   position: absolute; top: 10px; right: 12px;
   width: 32px; height: 32px; border-radius: 8px;
-  border: 1px solid var(--ck-border); background: var(--ck-bg);
-  color: var(--ck-text); font-size: 22px; line-height: 1; cursor: pointer;
+  border: 1px solid var(--biscotto-border) !important;
+  background: var(--biscotto-bg) !important;
+  color: var(--biscotto-text) !important;
+  font-size: 22px; line-height: 1; cursor: pointer;
 }
-.ck-close:hover { background: var(--ck-border); }
+.biscotto-close:hover { background: var(--biscotto-border) !important; }
 
 /* --- Overlay + pannello preferenze ---------------------------------------- */
-.ck-overlay {
-  position: fixed; inset: 0; z-index: calc(var(--ck-z) + 1);
+.biscotto-overlay {
+  position: fixed; inset: 0; z-index: calc(var(--biscotto-z) + 1);
   background: rgba(0, 0, 0, .5);
   display: flex; align-items: center; justify-content: center;
   padding: 16px; font-family: inherit;
 }
-.ck-prefs-panel {
-  position: relative; background: var(--ck-bg); color: var(--ck-text);
+.biscotto-prefs-panel {
+  position: relative; background: var(--biscotto-bg); color: var(--biscotto-text);
   width: min(640px, 100%); max-height: 90vh; overflow: auto;
-  border-radius: var(--ck-radius); padding: 24px; font-size: 14px;
+  border-radius: var(--biscotto-radius); padding: 24px; font-size: 14px;
 }
-.ck-prefs-panel .ck-title { margin: 0 0 16px; font-size: 18px; font-weight: 700; }
-.ck-prefs-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
-.ck-prefs-row { border: 1px solid var(--ck-border); border-radius: 8px; padding: 12px 14px; }
-.ck-row-head { display: flex; align-items: center; gap: 10px; font-weight: 600; cursor: pointer; }
-.ck-row-head input { width: 18px; height: 18px; accent-color: var(--ck-primary); }
-.ck-row-desc { margin: 8px 0 0 28px; color: var(--ck-muted); font-size: 13px; }
+.biscotto-prefs-panel .biscotto-title { margin: 0 0 16px; font-size: 18px; font-weight: 700; }
+.biscotto-prefs-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
+.biscotto-prefs-row { border: 1px solid var(--biscotto-border); border-radius: 8px; padding: 12px 14px; }
+.biscotto-row-head { display: flex; align-items: center; gap: 10px; font-weight: 600; cursor: pointer; }
+.biscotto-row-head input { width: 18px; height: 18px; accent-color: var(--biscotto-primary); }
+.biscotto-row-desc { margin: 8px 0 0 28px; color: var(--biscotto-muted); font-size: 13px; }
 
 /* --- Pulsante "Rivedi le tue scelte" -------------------------------------- */
-.ck-review {
-  position: fixed; left: 16px; bottom: 16px; z-index: calc(var(--ck-z) - 1);
+.biscotto-review {
+  position: fixed; left: 16px; bottom: 16px; z-index: calc(var(--biscotto-z) - 1);
   width: 44px; height: 44px; border-radius: 50%;
-  border: 1px solid var(--ck-border); background: var(--ck-bg);
+  border: 1px solid var(--biscotto-border); background: var(--biscotto-bg);
   font-size: 22px; line-height: 1; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,.15);
 }
-.ck-review:hover { transform: scale(1.05); }
+.biscotto-review:hover { transform: scale(1.05); }
 
 /* --- Responsive ----------------------------------------------------------- */
-@media (max-width: 600px) {
-  .ck-actions { justify-content: stretch; }
-  .ck-actions .ck-btn-primary { flex: 1 1 auto; }
+/* --- Modalità COMPATTA -----------------------------------------------------
+   Telefoni (ogni orientamento) + tablet in verticale: qualunque posizione
+   scelta nel backend diventa una barra in basso a piena larghezza, alta ~1/3
+   dello schermo, con testo e pulsanti scalati. Il telefono in orizzontale
+   (viewport basso) usa ~1/2 per restare leggibile (regola dedicata sotto). */
+@media (max-width: 600px),
+       (min-width: 601px) and (max-width: 1024px) and (orientation: portrait),
+       (max-width: 1024px) and (orientation: landscape) and (max-height: 500px) {
+  .biscotto-banner {
+    left: 0; right: 0; bottom: 0; top: auto;
+    transform: none;
+    width: auto; max-width: none;
+    border-left: 0; border-right: 0; border-bottom: 0;
+    border-radius: 0;
+    box-shadow: var(--biscotto-shadow);
+    display: flex; flex-direction: column; justify-content: center; gap: 14px;
+    min-height: 33vh; max-height: 70vh; overflow-y: auto;
+    padding: clamp(20px, 5vw, 40px);
+  }
+  /* Tipografia scalata a tutto lo spazio. La doppia classe .biscotto-banner.biscotto-banner
+     alza la specificita' a 0,3,0 (0,4,0 sui bottoni) per battere le regole
+     desktop .biscotto-banner.biscotto-bottom-bar (0,3,0 / 0,4,0) che, valendo a ogni
+     larghezza, altrimenti terrebbero i font piccoli quando la posizione e'
+     "Barra in basso". Vince per QUALSIASI posizione. */
+  .biscotto-banner.biscotto-banner .biscotto-title { font-size: clamp(24px, 6.5vw, 34px); }
+  .biscotto-banner.biscotto-banner .biscotto-text  { font-size: clamp(18px, 4.8vw, 23px); line-height: 1.5; }
+  .biscotto-banner.biscotto-banner .biscotto-link  { font-size: clamp(15px, 4vw, 18px); }
+  /* Azioni (verticale): i due primari a LARGHEZZA UGUALE su una riga
+     (flex-basis 0 => non dipende dal testo); "Gestisci preferenze" (link)
+     su una riga propria, centrato, sotto. */
+  .biscotto-banner .biscotto-actions { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: center; }
+  .biscotto-banner.biscotto-box-right .biscotto-actions,
+  .biscotto-banner.biscotto-box-left  .biscotto-actions { flex-direction: row; }
+  .biscotto-banner.biscotto-banner .biscotto-actions .biscotto-btn { font-size: clamp(17px, 4.6vw, 21px); padding: 15px 24px; }
+  .biscotto-banner .biscotto-actions .biscotto-btn-primary { flex: 1 1 0; width: auto; }
+  .biscotto-banner.biscotto-box-right .biscotto-actions .biscotto-btn,
+  .biscotto-banner.biscotto-box-left  .biscotto-actions .biscotto-btn { width: auto; }
+  .biscotto-banner .biscotto-actions .biscotto-btn-link { order: 1; flex: 1 0 100%; width: auto; text-align: center; }
+}
+
+/* Telefono in orizzontale (viewport basso): banner ~1/2, font e padding piu'
+   contenuti e TUTTE le azioni su un'unica riga (compreso "Gestisci") per non
+   sforare in altezza. */
+@media (max-width: 1024px) and (orientation: landscape) and (max-height: 500px) {
+  .biscotto-banner { min-height: 50vh; max-height: 85vh; gap: 8px; padding: 14px clamp(20px, 5vw, 40px); }
+  .biscotto-banner.biscotto-banner .biscotto-title { font-size: clamp(18px, 3.2vw, 23px); }
+  .biscotto-banner.biscotto-banner .biscotto-text  { font-size: clamp(14px, 2.4vw, 17px); line-height: 1.4; }
+  .biscotto-banner.biscotto-banner .biscotto-actions .biscotto-btn { font-size: clamp(14px, 2.2vw, 17px); padding: 10px 16px; }
+  .biscotto-banner .biscotto-actions .biscotto-btn-link { flex: 0 1 auto; width: auto; text-align: center; }
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --ck-bg: #1f2937; --ck-text: #f3f4f6; --ck-muted: #9ca3af; --ck-border: #374151;
+    --biscotto-bg: #1f2937; --biscotto-text: #f3f4f6; --biscotto-muted: #9ca3af; --biscotto-border: #374151;
   }
 }
 
 /* --- Cookie policy page (shortcode) --------------------------------------- */
-.ck-cookie-table { margin: 1em 0; }
-.ck-cookie-table .ck-cat { margin: 0 0 1.6em; }
-.ck-cookie-table .ck-cat-title {
+.biscotto-cookie-table { margin: 1em 0; }
+.biscotto-cookie-table .biscotto-cat { margin: 0 0 1.6em; }
+.biscotto-cookie-table .biscotto-cat-title {
   margin: 1.4em 0 0.6em; font-size: 1.2em; line-height: 1.2;
-  padding-bottom: 0.3em; border-bottom: 2px solid var(--ck-border, #e5e7eb);
+  padding-bottom: 0.3em; border-bottom: 2px solid var(--biscotto-border, #e5e7eb);
 }
-.ck-cookie-table .ck-service { margin: 0 0 1.1em; }
-.ck-cookie-table .ck-service-name {
+.biscotto-cookie-table .biscotto-service { margin: 0 0 1.1em; }
+.biscotto-cookie-table .biscotto-service-name {
   margin: 0.8em 0 0.3em; font-size: 1.02em; font-weight: 600;
 }
-.ck-cookie-table .ck-service-link { font-size: 0.85em; font-weight: 400; margin-left: 0.4em; }
-.ck-cookie-table .ck-table {
+.biscotto-cookie-table .biscotto-service-link { font-size: 0.85em; font-weight: 400; margin-left: 0.4em; }
+.biscotto-cookie-table .biscotto-table {
   width: 100%; border-collapse: collapse; table-layout: fixed;
   margin: 0; font-size: 0.95em;
 }
-.ck-cookie-table .ck-table th,
-.ck-cookie-table .ck-table td {
+.biscotto-cookie-table .biscotto-table th,
+.biscotto-cookie-table .biscotto-table td {
   text-align: left; padding: 8px 12px; vertical-align: top;
-  border: 1px solid var(--ck-border, #e5e7eb); word-break: break-word;
+  border: 1px solid var(--biscotto-border, #e5e7eb); word-break: break-word;
 }
-.ck-cookie-table .ck-table thead th { background: rgba(0, 0, 0, 0.05); font-weight: 600; }
-.ck-cookie-table .ck-table tbody tr:nth-child(even) { background: rgba(0, 0, 0, 0.025); }
-.ck-cookie-table .ck-table th:nth-child(1),
-.ck-cookie-table .ck-table td:nth-child(1) { width: 65%; }
-.ck-cookie-table .ck-table th:nth-child(2),
-.ck-cookie-table .ck-table td:nth-child(2) { width: 35%; }
+.biscotto-cookie-table .biscotto-table thead th { background: rgba(0, 0, 0, 0.05); font-weight: 600; }
+.biscotto-cookie-table .biscotto-table tbody tr:nth-child(even) { background: rgba(0, 0, 0, 0.025); }
+.biscotto-cookie-table .biscotto-table th:nth-child(1),
+.biscotto-cookie-table .biscotto-table td:nth-child(1) { width: 65%; }
+.biscotto-cookie-table .biscotto-table th:nth-child(2),
+.biscotto-cookie-table .biscotto-table td:nth-child(2) { width: 35%; }
 
-.ck-consent-settings { margin-top: 1.8em; }
-.ck-consent-settings .ck-consent-state { list-style: none; margin: 0 0 1em; padding: 0; }
-.ck-consent-settings .ck-state-row { padding: 5px 0; }
-.ck-consent-settings .ck-state-name { font-weight: 600; }
-.ck-consent-settings .ck-state-on .ck-state-val { color: #15803d; font-weight: 600; }
-.ck-consent-settings .ck-state-off .ck-state-val { color: #b91c1c; font-weight: 600; }
-.ck-policy-manage {
-  background: var(--ck-primary, #2563eb); color: #fff; border: 0; border-radius: 6px;
+.biscotto-consent-settings { margin-top: 1.8em; }
+.biscotto-consent-settings .biscotto-consent-state { list-style: none; margin: 0 0 1em; padding: 0; }
+.biscotto-consent-settings .biscotto-state-row { padding: 5px 0; }
+.biscotto-consent-settings .biscotto-state-name { font-weight: 600; }
+.biscotto-consent-settings .biscotto-state-on .biscotto-state-val { color: #15803d; font-weight: 600; }
+.biscotto-consent-settings .biscotto-state-off .biscotto-state-val { color: #b91c1c; font-weight: 600; }
+.biscotto-policy-manage {
+  background: var(--biscotto-primary, #2563eb); color: #fff; border: 0; border-radius: 6px;
   padding: 10px 16px; font-size: 15px; cursor: pointer;
 }
-.ck-policy-manage:hover { opacity: 0.92; }
+.biscotto-policy-manage:hover { opacity: 0.92; }
 
 @media (max-width: 600px) {
-  .ck-cookie-table .ck-table { font-size: 0.88em; }
-  .ck-cookie-table .ck-table th,
-  .ck-cookie-table .ck-table td { padding: 7px 8px; }
+  .biscotto-cookie-table .biscotto-table { font-size: 0.88em; }
+  .biscotto-cookie-table .biscotto-table th,
+  .biscotto-cookie-table .biscotto-table td { padding: 7px 8px; }
 }

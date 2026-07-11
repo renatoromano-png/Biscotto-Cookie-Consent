@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ConsentKit — build/sync
+# Biscotto — build/sync
 # Il core (packages/core) è l'unica fonte di verità. Questo script copia il core
 # dentro gli adattatori, così non si mantengono copie a mano (vedi project §4.4/§5).
 set -euo pipefail
@@ -9,7 +9,7 @@ CORE="$ROOT/packages/core"
 WP="$ROOT/packages/wordpress"
 SA="$ROOT/packages/standalone"
 
-echo "ConsentKit build — root: $ROOT"
+echo "Biscotto build — root: $ROOT"
 
 # --- Adattatore WordPress -------------------------------------------------
 mkdir -p "$WP/public/js" "$WP/public/css"
@@ -20,7 +20,7 @@ echo "  ✓ WordPress public/ aggiornato"
 
 # --- Adattatore standalone -----------------------------------------------
 mkdir -p "$SA"
-cp "$CORE/src/consent-manager.js"      "$SA/consentkit.js"
+cp "$CORE/src/consent-manager.js"      "$SA/biscotto.js"
 cp "$CORE/src/consent-mode-default.js" "$SA/consent-mode-default.js"
 cp "$CORE/css/banner.css"              "$SA/banner.css"
 echo "  ✓ standalone/ aggiornato"

@@ -1,4 +1,4 @@
-# ConsentKit
+# Biscotto
 
 Cookie consent manager open source (GPL-2.0), conforme alle Linee guida del Garante Privacy italiano e a GDPR/ePrivacy. **Nessun limite** su pagine, Custom Post Type o pageview.
 
@@ -11,7 +11,7 @@ Cookie consent manager open source (GPL-2.0), conforme alle Linee guida del Gara
 
 ## Architettura — core + adattatori
 
-ConsentKit è un **monorepo**: un core JavaScript condiviso e adattatori sottili per piattaforma.
+Biscotto è un **monorepo**: un core JavaScript condiviso e adattatori sottili per piattaforma.
 
 ```
 packages/
@@ -20,7 +20,7 @@ packages/
 └── standalone/   Adattatore generico (siti non-WordPress)
 ```
 
-Il `core` non dipende da nessuna piattaforma: riceve tutto da `window.ckConfig`. Gli adattatori si limitano a popolare quell'oggetto e a piazzare il Consent Mode default nel `<head>`.
+Il `core` non dipende da nessuna piattaforma: riceve tutto da `window.biscottoConfig`. Gli adattatori si limitano a popolare quell'oggetto e a piazzare il Consent Mode default nel `<head>`.
 
 ## Le due modalità d'uso
 
@@ -33,8 +33,8 @@ Il `core` non dipende da nessuna piattaforma: riceve tutto da `window.ckConfig`.
 ## Installazione
 
 ### WordPress
-1. Copia `packages/wordpress/` in `wp-content/plugins/consentkit/` (con il core già incluso in `public/`, vedi build).
-2. Attiva e configura in **Impostazioni → ConsentKit**.
+1. Copia `packages/wordpress/` in `wp-content/plugins/biscotto/` (con il core già incluso in `public/`, vedi build).
+2. Attiva e configura in **Impostazioni → Biscotto**.
 
 ### Siti non-WordPress
 Vedi [`packages/standalone/README.md`](packages/standalone/README.md).
@@ -57,4 +57,4 @@ bash tools/build.sh
 
 GPL-2.0-or-later. Vedi [LICENSE](LICENSE).
 
-> **Disclaimer:** ConsentKit fornisce gli strumenti tecnici per la conformità. La conformità complessiva dipende anche dalla corretta informativa privacy e dalla classificazione reale dei cookie del sito. Non costituisce consulenza legale.
+> **Disclaimer:** Biscotto fornisce gli strumenti tecnici per la conformità. La conformità complessiva dipende anche dalla corretta informativa privacy e dalla classificazione reale dei cookie del sito. Non costituisce consulenza legale.

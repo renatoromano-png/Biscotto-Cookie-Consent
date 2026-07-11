@@ -1,5 +1,5 @@
 /**
- * ConsentKit — Google Consent Mode v2 DEFAULT
+ * Biscotto — Google Consent Mode v2 DEFAULT
  * --------------------------------------------------------------------------
  * Questo snippet DEVE essere iniettato nel <head> PRIMA dello snippet GTM/GA4
  * (vedi consentkit-project.md §4.2, §13.7). Imposta tutto su "denied" finché

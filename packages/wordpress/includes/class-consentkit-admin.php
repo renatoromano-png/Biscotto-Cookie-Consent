@@ -22,8 +22,8 @@ class ConsentKit_Admin {
 
 	public function register_menu() {
 		add_options_page(
-			__( 'ConsentKit', 'consentkit' ),
-			__( 'ConsentKit', 'consentkit' ),
+			__( 'Biscotto', 'biscotto' ),
+			__( 'Biscotto', 'biscotto' ),
 			'manage_options',
 			self::PAGE_SLUG,
 			array( $this, 'render_page' )
@@ -32,7 +32,7 @@ class ConsentKit_Admin {
 
 	public function settings_link( $links ) {
 		$url = admin_url( 'options-general.php?page=' . self::PAGE_SLUG );
-		array_unshift( $links, '<a href="' . esc_url( $url ) . '">' . esc_html__( 'Impostazioni', 'consentkit' ) . '</a>' );
+		array_unshift( $links, '<a href="' . esc_url( $url ) . '">' . esc_html__( 'Impostazioni', 'biscotto' ) . '</a>' );
 		return $links;
 	}
 
@@ -43,7 +43,7 @@ class ConsentKit_Admin {
 		wp_enqueue_style( 'consentkit-admin', CONSENTKIT_URL . 'admin/css/admin.css', array(), CONSENTKIT_VERSION );
 		wp_enqueue_style( 'wp-color-picker' );
 		wp_enqueue_script( 'wp-color-picker' );
-		wp_add_inline_script( 'wp-color-picker', 'jQuery(function($){$(".ck-color-field").wpColorPicker();});' );
+		wp_add_inline_script( 'wp-color-picker', 'jQuery(function($){$(".biscotto-color-field").wpColorPicker();});' );
 
 		// Solo nel tab Scansione: orchestratore dello scanner runtime (§14).
 		$tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'general'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -56,7 +56,7 @@ class ConsentKit_Admin {
 			}
 			wp_localize_script(
 				'consentkit-scan',
-				'ckScan',
+				'consentkitScan',
 				array(
 					'scanNonce'  => ConsentKit_Scanner::scan_nonce(),
 					'restNonce'  => wp_create_nonce( 'wp_rest' ),
@@ -70,40 +70,53 @@ class ConsentKit_Admin {
 					'timeoutMs'  => 12000,
 					'maxUrls'    => 10,
 					'categories' => array(
-						'necessary'   => __( 'Necessari', 'consentkit' ),
-						'analytics'   => __( 'Analytics', 'consentkit' ),
-						'marketing'   => __( 'Marketing', 'consentkit' ),
-						'preferences' => __( 'Preferenze', 'consentkit' ),
+						'necessary'   => __( 'Necessari', 'biscotto' ),
+						'analytics'   => __( 'Analytics', 'biscotto' ),
+						'marketing'   => __( 'Marketing', 'biscotto' ),
+						'preferences' => __( 'Preferenze', 'biscotto' ),
 					),
 					'i18n'       => array(
-						'scanningServer' => __( 'Analisi rapida delle pagine…', 'consentkit' ),
-						'scanningHome'   => __( 'Analisi a runtime della homepage…', 'consentkit' ),
-						'classifying'  => __( 'Classificazione dei risultati…', 'consentkit' ),
-						'done'         => __( 'Scansione completata.', 'consentkit' ),
-						'error'        => __( 'Si è verificato un errore.', 'consentkit' ),
-						'noUrls'       => __( 'Inserisci almeno un URL.', 'consentkit' ),
-						'nothing'      => __( 'Nessun cookie o servizio di terze parti rilevato.', 'consentkit' ),
-						'noneSelected' => __( 'Nessuna riga selezionata.', 'consentkit' ),
-						'importing'    => __( 'Importazione…', 'consentkit' ),
+						'scanningServer' => __( 'Analisi rapida delle pagine…', 'biscotto' ),
+						'scanningHome'   => __( 'Analisi a runtime della homepage…', 'biscotto' ),
+						'classifying'  => __( 'Classificazione dei risultati…', 'biscotto' ),
+						'done'         => __( 'Scansione completata.', 'biscotto' ),
+						'error'        => __( 'Si è verificato un errore.', 'biscotto' ),
+						'noUrls'       => __( 'Inserisci almeno un URL.', 'biscotto' ),
+						'nothing'      => __( 'Nessun cookie o servizio di terze parti rilevato.', 'biscotto' ),
+						'noneSelected' => __( 'Nessuna riga selezionata.', 'biscotto' ),
+						'importing'    => __( 'Importazione…', 'biscotto' ),
 						/* translators: %d: numero di voci aggiunte al registro. */
-						'imported'     => __( '%d voci aggiunte al registro. Ricarica il tab Cookie per vederle.', 'consentkit' ),
-						'sourceCookie' => __( 'Cookie', 'consentkit' ),
-						'sourceDomain' => __( 'Dominio', 'consentkit' ),
-						'tooMany'      => __( 'Massimo 10 URL: ho scansionato i primi 10.', 'consentkit' ),
+						'imported'     => __( '%d voci aggiunte al registro. Ricarica il tab Cookie per vederle.', 'biscotto' ),
+						'sourceCookie' => __( 'Cookie', 'biscotto' ),
+						'sourceDomain' => __( 'Dominio', 'biscotto' ),
+						'tooMany'      => __( 'Massimo 10 URL: ho scansionato i primi 10.', 'biscotto' ),
 						/* translators: %d: numero di URL esterni ignorati. */
-						'externalSkipped' => __( '%d URL esterni ignorati (si scansiona solo questo sito).', 'consentkit' ),
-						'info'         => __( 'Info', 'consentkit' ),
-						'enriching'    => __( 'Ricerca nel database…', 'consentkit' ),
+						'externalSkipped' => __( '%d URL esterni ignorati (si scansiona solo questo sito).', 'biscotto' ),
+						'info'         => __( 'Info', 'biscotto' ),
+						'enriching'    => __( 'Ricerca nel database…', 'biscotto' ),
 						/* translators: %d: numero di campi completati. */
-						'enriched'     => __( '%d campi completati dal database.', 'consentkit' ),
-						'enrichedNone' => __( 'Nessun campo aggiuntivo trovato nel database.', 'consentkit' ),
-						'checkingDb'        => __( 'Verifica in corso…', 'consentkit' ),
-						'dbUpToDate'        => __( 'Database aggiornato: nessun aggiornamento disponibile.', 'consentkit' ),
+						'enriched'     => __( '%d campi completati dal database.', 'biscotto' ),
+						'enrichedNone' => __( 'Nessun campo aggiuntivo trovato nel database.', 'biscotto' ),
+						'checkingDb'        => __( 'Verifica in corso…', 'biscotto' ),
+						'dbUpToDate'        => __( 'Database aggiornato: nessun aggiornamento disponibile.', 'biscotto' ),
 						/* translators: %s: data dell'ultimo aggiornamento upstream (AAAA-MM-GG). */
-						'dbUpdateAvailable' => __( 'È disponibile un aggiornamento del database (ultima modifica upstream: %s).', 'consentkit' ),
-						'dbGithubLink'      => __( 'Vedi su GitHub', 'consentkit' ),
-						'dbCheckError'      => __( 'Impossibile verificare ora. Riprova più tardi.', 'consentkit' ),
+						'dbUpdateAvailable' => __( 'È disponibile un aggiornamento del database (ultima modifica upstream: %s).', 'biscotto' ),
+						'dbGithubLink'      => __( 'Vedi su GitHub', 'biscotto' ),
+						'dbCheckError'      => __( 'Impossibile verificare ora. Riprova più tardi.', 'biscotto' ),
 					),
+				)
+			);
+		}
+
+		// Solo nel tab Cookie: editor delle righe del registro + copia shortcode.
+		if ( 'cookies' === $tab ) {
+			wp_enqueue_script( 'consentkit-cookies', CONSENTKIT_URL . 'admin/js/cookies.js', array(), CONSENTKIT_VERSION, true );
+			wp_localize_script(
+				'consentkit-cookies',
+				'consentkitCookies',
+				array(
+					'confirmClear' => __( 'Svuotare tutto il registro cookie? Le righe verranno rimosse; salva per confermare.', 'biscotto' ),
+					'copied'       => __( 'Copiato!', 'biscotto' ),
 				)
 			);
 		}
@@ -207,15 +220,15 @@ class ConsentKit_Admin {
 		}
 		$settings = ConsentKit::get_settings();
 		$tabs     = array(
-			'general'      => __( 'Generale', 'consentkit' ),
-			'cookies'      => __( 'Cookie', 'consentkit' ),
-			'scan'         => __( 'Scansione', 'consentkit' ),
-			'integrations' => __( 'Integrazioni', 'consentkit' ),
+			'general'      => __( 'Generale', 'biscotto' ),
+			'cookies'      => __( 'Cookie', 'biscotto' ),
+			'scan'         => __( 'Scansione', 'biscotto' ),
+			'integrations' => __( 'Integrazioni', 'biscotto' ),
 		);
 		$active = isset( $_GET['tab'] ) && isset( $tabs[ $_GET['tab'] ] ) ? sanitize_key( $_GET['tab'] ) : 'general'; // phpcs:ignore WordPress.Security.NonceVerification
 		?>
 		<div class="wrap consentkit-wrap">
-			<h1><?php esc_html_e( 'ConsentKit', 'consentkit' ); ?></h1>
+			<h1><?php esc_html_e( 'Biscotto', 'biscotto' ); ?></h1>
 
 			<h2 class="nav-tab-wrapper">
 				<?php foreach ( $tabs as $slug => $label ) : ?>

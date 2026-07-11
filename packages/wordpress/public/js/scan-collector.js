@@ -1,8 +1,8 @@
 /**
- * ConsentKit — Scan collector (roadmap §14, v1.1)
+ * Biscotto — Scan collector (roadmap §14, v1.1)
  * --------------------------------------------------------------------------
  * Gira SOLO dentro l'iframe nascosto avviato dall'admin in scan-mode
- * (window.__ckScanMode impostato dal pre-grant lato server). Con il consenso
+ * (window.__biscottoScanMode impostato dal pre-grant lato server). Con il consenso
  * già forzato ad "accettato", i tag partono: dopo il load + una breve attesa
  * raccogliamo cosa è stato caricato e lo inviamo al parent via postMessage.
  *
@@ -13,7 +13,7 @@
 (function (window, document) {
   'use strict';
 
-  if (!window.__ckScanMode) { return; }
+  if (!window.__biscottoScanMode) { return; }
 
   // Attesa dopo il load per dare tempo ai tag (GA/Ads/Maps) di sparare e
   // impostare cookie / scaricare risorse di terze parti.
@@ -102,13 +102,13 @@
     } finally {
       // Ripristina lo stato SEMPRE: il pre-grant (consenso forzato) non deve
       // restare nella sessione dell'admin, anche se la raccolta fallisce.
-      try { window.localStorage.removeItem('ck_consent'); } catch (e) {}
+      try { window.localStorage.removeItem('biscotto_consent'); } catch (e) {}
     }
 
     if (finding) {
       try {
         window.parent.postMessage(
-          { __ckScan: true, finding: finding },
+          { __biscottoScan: true, finding: finding },
           window.location.origin
         );
       } catch (e) {}

@@ -1,11 +1,11 @@
 /**
- * ConsentKit — Core Consent Manager
+ * Biscotto — Core Consent Manager
  * --------------------------------------------------------------------------
  * Vanilla JS, ZERO dipendenze (no jQuery). È il cuore portabile del prodotto:
  * gira identico su WordPress, siti statici, Shopify, ecc.
  *
  * VINCOLO ARCHITETTURALE (vedi consentkit-project.md §4.4):
- *   legge la configurazione ESCLUSIVAMENTE da window.ckConfig.
+ *   legge la configurazione ESCLUSIVAMENTE da window.biscottoConfig.
  *   Non conosce WordPress né alcuna piattaforma specifica.
  *
  * Conformità: Linee guida Garante (doc. 9677876) + GDPR/ePrivacy.
@@ -20,13 +20,13 @@
 (function (window, document) {
   'use strict';
 
-  var STORAGE_KEY = 'ck_consent';
+  var STORAGE_KEY = 'biscotto_consent';
   var TOGGLEABLE = ['analytics', 'marketing', 'preferences'];
 
   // --- Config ---------------------------------------------------------------
-  var cfg = window.ckConfig;
+  var cfg = window.biscottoConfig;
   if (!cfg) {
-    if (window.console) console.warn('[ConsentKit] window.ckConfig mancante: manager non avviato.');
+    if (window.console) console.warn('[Biscotto] window.biscottoConfig mancante: manager non avviato.');
     return;
   }
 
@@ -127,7 +127,7 @@
   function pushDataLayer(state) {
     if (!integrations.gtm) return;
     window.dataLayer.push({
-      event: 'ck_consent_update',
+      event: 'biscotto_consent_update',
       ck_analytics: state.analytics,
       ck_marketing: state.marketing,
       ck_preferences: state.preferences
@@ -136,23 +136,23 @@
 
   /**
    * Prior blocking (§13.12): attiva gli script bloccati
-   *   <script type="text/plain" data-ck-category="analytics" data-src="..."></script>
+   *   <script type="text/plain" data-biscotto-category="analytics" data-src="..."></script>
    * Solo dopo l'opt-in della relativa categoria.
    */
   function activateScripts(state) {
-    var blocked = document.querySelectorAll('script[type="text/plain"][data-ck-category]');
+    var blocked = document.querySelectorAll('script[type="text/plain"][data-biscotto-category]');
     Array.prototype.forEach.call(blocked, function (node) {
-      var cat = node.getAttribute('data-ck-category');
-      if (!state[cat] || node.getAttribute('data-ck-activated')) return;
+      var cat = node.getAttribute('data-biscotto-category');
+      if (!state[cat] || node.getAttribute('data-biscotto-activated')) return;
       var s = document.createElement('script');
       Array.prototype.forEach.call(node.attributes, function (attr) {
-        if (attr.name === 'type' || attr.name === 'data-ck-category') return;
+        if (attr.name === 'type' || attr.name === 'data-biscotto-category') return;
         if (attr.name === 'data-src') { s.setAttribute('src', attr.value); return; }
         s.setAttribute(attr.name, attr.value);
       });
       if (node.textContent) s.textContent = node.textContent;
       node.parentNode.insertBefore(s, node.nextSibling);
-      node.setAttribute('data-ck-activated', '1');
+      node.setAttribute('data-biscotto-activated', '1');
     });
   }
 
@@ -185,9 +185,9 @@
   }
 
   function policyLinks() {
-    var wrap = el('div', { 'class': 'ck-links' });
-    if (cfg.privacyPolicyUrl) wrap.appendChild(el('a', { 'class': 'ck-link', href: cfg.privacyPolicyUrl, target: '_blank', rel: 'noopener', text: bannerCfg.privacyLabel || 'Privacy policy' }));
-    if (cfg.cookiePolicyUrl) wrap.appendChild(el('a', { 'class': 'ck-link', href: cfg.cookiePolicyUrl, target: '_blank', rel: 'noopener', text: bannerCfg.cookieLabel || 'Cookie policy' }));
+    var wrap = el('div', { 'class': 'biscotto-links' });
+    if (cfg.privacyPolicyUrl) wrap.appendChild(el('a', { 'class': 'biscotto-link', href: cfg.privacyPolicyUrl, target: '_blank', rel: 'noopener', text: bannerCfg.privacyLabel || 'Privacy policy' }));
+    if (cfg.cookiePolicyUrl) wrap.appendChild(el('a', { 'class': 'biscotto-link', href: cfg.cookiePolicyUrl, target: '_blank', rel: 'noopener', text: bannerCfg.cookieLabel || 'Cookie policy' }));
     return wrap.childNodes.length ? wrap : null;
   }
 
@@ -196,10 +196,10 @@
 
   function renderBanner() {
     if (bannerNode) return;
-    var btnAccept = el('button', { 'class': 'ck-btn ck-btn-primary', type: 'button', text: bannerCfg.acceptLabel || 'Accetta tutto' });
-    var btnReject = el('button', { 'class': 'ck-btn ck-btn-primary', type: 'button', text: bannerCfg.rejectLabel || 'Rifiuta' });
-    var btnManage = el('button', { 'class': 'ck-btn ck-btn-link', type: 'button', text: bannerCfg.customizeLabel || 'Gestisci preferenze' });
-    var btnClose = el('button', { 'class': 'ck-close', type: 'button', 'aria-label': bannerCfg.closeLabel || 'Chiudi' , text: '×' });
+    var btnAccept = el('button', { 'class': 'biscotto-btn biscotto-btn-primary', type: 'button', text: bannerCfg.acceptLabel || 'Accetta tutto' });
+    var btnReject = el('button', { 'class': 'biscotto-btn biscotto-btn-primary', type: 'button', text: bannerCfg.rejectLabel || 'Rifiuta' });
+    var btnManage = el('button', { 'class': 'biscotto-btn biscotto-btn-link', type: 'button', text: bannerCfg.customizeLabel || 'Gestisci preferenze' });
+    var btnClose = el('button', { 'class': 'biscotto-close', type: 'button', 'aria-label': bannerCfg.closeLabel || 'Chiudi' , text: '×' });
 
     btnAccept.addEventListener('click', function () { acceptAll(); });
     btnReject.addEventListener('click', function () { rejectAll(); });
@@ -207,16 +207,16 @@
     // X = mantieni i default (nessun tracciamento). Non è opt-out (§13.4).
     btnClose.addEventListener('click', function () { keepDefault(); });
 
-    var body = el('div', { 'class': 'ck-body' }, [
-      el('p', { 'class': 'ck-title', text: bannerCfg.title || 'Utilizziamo i cookie' }),
-      el('p', { 'class': 'ck-text', text: bannerCfg.body || '' }),
+    var body = el('div', { 'class': 'biscotto-body' }, [
+      el('p', { 'class': 'biscotto-title', text: bannerCfg.title || 'Utilizziamo i cookie' }),
+      el('p', { 'class': 'biscotto-text', text: bannerCfg.body || '' }),
       policyLinks()
     ]);
 
-    var actions = el('div', { 'class': 'ck-actions' }, [btnManage, btnReject, btnAccept]);
+    var actions = el('div', { 'class': 'biscotto-actions' }, [btnManage, btnReject, btnAccept]);
 
     bannerNode = el('div', {
-      'class': 'ck-banner ck-' + position,
+      'class': 'biscotto-banner biscotto-' + position,
       role: 'dialog', 'aria-modal': 'false', 'aria-label': bannerCfg.title || 'Cookie'
     }, [btnClose, body, actions]);
 
@@ -238,10 +238,10 @@
       rows.push(categoryRow(cat, labelFor(cat), currentState[cat], false));
     });
 
-    var btnSave = el('button', { 'class': 'ck-btn ck-btn-primary', type: 'button', text: bannerCfg.saveLabel || 'Salva preferenze' });
-    var btnAcceptAll = el('button', { 'class': 'ck-btn ck-btn-primary', type: 'button', text: bannerCfg.acceptLabel || 'Accetta tutto' });
-    var btnRejectAll = el('button', { 'class': 'ck-btn ck-btn-primary', type: 'button', text: bannerCfg.rejectLabel || 'Rifiuta' });
-    var btnClose = el('button', { 'class': 'ck-close', type: 'button', 'aria-label': bannerCfg.closeLabel || 'Chiudi', text: '×' });
+    var btnSave = el('button', { 'class': 'biscotto-btn biscotto-btn-primary', type: 'button', text: bannerCfg.saveLabel || 'Salva preferenze' });
+    var btnAcceptAll = el('button', { 'class': 'biscotto-btn biscotto-btn-primary', type: 'button', text: bannerCfg.acceptLabel || 'Accetta tutto' });
+    var btnRejectAll = el('button', { 'class': 'biscotto-btn biscotto-btn-primary', type: 'button', text: bannerCfg.rejectLabel || 'Rifiuta' });
+    var btnClose = el('button', { 'class': 'biscotto-close', type: 'button', 'aria-label': bannerCfg.closeLabel || 'Chiudi', text: '×' });
 
     btnSave.addEventListener('click', function () {
       var next = defaultState();
@@ -255,14 +255,14 @@
     btnRejectAll.addEventListener('click', function () { rejectAll(); });
     btnClose.addEventListener('click', function () { closePreferences(); });
 
-    var panel = el('div', { 'class': 'ck-prefs-panel', role: 'dialog', 'aria-modal': 'true', 'aria-label': bannerCfg.prefsTitle || 'Preferenze cookie' }, [
+    var panel = el('div', { 'class': 'biscotto-prefs-panel', role: 'dialog', 'aria-modal': 'true', 'aria-label': bannerCfg.prefsTitle || 'Preferenze cookie' }, [
       btnClose,
-      el('p', { 'class': 'ck-title', text: bannerCfg.prefsTitle || 'Preferenze cookie' }),
-      el('div', { 'class': 'ck-prefs-list' }, rows),
-      el('div', { 'class': 'ck-actions' }, [btnRejectAll, btnSave, btnAcceptAll])
+      el('p', { 'class': 'biscotto-title', text: bannerCfg.prefsTitle || 'Preferenze cookie' }),
+      el('div', { 'class': 'biscotto-prefs-list' }, rows),
+      el('div', { 'class': 'biscotto-actions' }, [btnRejectAll, btnSave, btnAcceptAll])
     ]);
 
-    prefsNode = el('div', { 'class': 'ck-overlay' }, [panel]);
+    prefsNode = el('div', { 'class': 'biscotto-overlay' }, [panel]);
     document.body.appendChild(prefsNode);
   }
 
@@ -282,17 +282,17 @@
     if (locked) input.disabled = true;
     var descs = bannerCfg.categoryDescriptions || {};
     var children = [
-      el('label', { 'class': 'ck-row-head' }, [input, el('span', { text: label })])
+      el('label', { 'class': 'biscotto-row-head' }, [input, el('span', { text: label })])
     ];
-    if (descs[cat]) children.push(el('p', { 'class': 'ck-row-desc', text: descs[cat] }));
-    return el('div', { 'class': 'ck-prefs-row' }, children);
+    if (descs[cat]) children.push(el('p', { 'class': 'biscotto-row-desc', text: descs[cat] }));
+    return el('div', { 'class': 'biscotto-prefs-row' }, children);
   }
 
   // --- Pulsante "Rivedi le tue scelte" (revoca sempre accessibile §13.8) ----
   function renderReviewButton() {
-    if (document.querySelector('.ck-review')) return;
+    if (document.querySelector('.biscotto-review')) return;
     var btn = el('button', {
-      'class': 'ck-review', type: 'button',
+      'class': 'biscotto-review', type: 'button',
       'aria-label': bannerCfg.reviewLabel || 'Rivedi le tue scelte sui cookie',
       title: bannerCfg.reviewLabel || 'Rivedi le tue scelte sui cookie',
       text: '🍪'
@@ -307,10 +307,10 @@
     try {
       var ev;
       if (typeof window.CustomEvent === 'function') {
-        ev = new CustomEvent('ck:consent', { detail: { categories: state, action: action } });
+        ev = new CustomEvent('biscotto:consent', { detail: { categories: state, action: action } });
       } else { // fallback IE
         ev = document.createEvent('CustomEvent');
-        ev.initCustomEvent('ck:consent', false, false, { categories: state, action: action });
+        ev.initCustomEvent('biscotto:consent', false, false, { categories: state, action: action });
       }
       document.dispatchEvent(ev);
     } catch (e) {}
@@ -349,7 +349,7 @@
   }
 
   // API pubblica (utile per integrazioni custom e per il pulsante footer del tema)
-  window.ConsentKit = {
+  window.Biscotto = {
     open: openPreferences,
     acceptAll: acceptAll,
     rejectAll: rejectAll,

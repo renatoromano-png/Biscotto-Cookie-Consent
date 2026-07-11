@@ -1,10 +1,10 @@
-=== ConsentKit ===
+=== Biscotto – Cookie Consent & Consent Mode ===
 Contributors: renatosaka
 Tags: cookie, consent, gdpr, cookie banner, consent mode
 Requires at least: 5.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.4.1
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,12 +12,12 @@ GDPR/ePrivacy cookie consent compliant with the Italian DPA (Garante) guidelines
 
 == Description ==
 
-ConsentKit is an open-source cookie consent manager with no artificial limits (no caps on pageviews, pages or Custom Post Types).
+Biscotto is an open-source cookie consent manager with no artificial limits (no caps on pageviews, pages or Custom Post Types).
 
 Features:
 
 * Compliant consent banner: close (X) button, equal Accept/Reject buttons, link to the privacy notice, granular preferences.
-* Prior blocking of scripts (`type="text/plain"` + `data-ck-category`) until consent is given.
+* Prior blocking of scripts (`type="text/plain"` + `data-biscotto-category`) until consent is given.
 * Google Consent Mode v2 (default denied before GTM, update on consent).
 * Google Tag Manager via dataLayer.
 * LinkedIn Insight Tag loaded only with marketing consent.
@@ -36,11 +36,30 @@ Roadmap (in progress):
 
 * Automatic blocking of iframes and embeds (Google Maps, YouTube) and Google Fonts with a "click to load" placeholder.
 
+== External services ==
+
+This plugin can connect to the third-party services listed below. They are all optional and disabled by default: the plugin does not contact them unless you enable the related feature or, for the update check, explicitly click the button.
+
+= Google Tag Manager =
+If you enable the "Google Tag Manager" integration and enter a container ID (Settings &rarr; Biscotto &rarr; Integrations), the plugin loads the GTM library from https://www.googletagmanager.com/gtm.js. GTM then runs the tags you configured in your own Google Tag Manager account. Thanks to Google Consent Mode v2 the storage is set to "denied" by default, so visitor data (such as IP address and cookies) is sent to Google only after the visitor consents. Service provided by Google LLC.
+Terms of service: https://marketingplatform.google.com/about/analytics/tag-manager/use-policy/
+Privacy policy: https://policies.google.com/privacy
+
+= LinkedIn Insight Tag =
+If you enable the "LinkedIn" integration and enter a Partner ID (Settings &rarr; Biscotto &rarr; Integrations), the plugin loads the LinkedIn Insight Tag from https://snap.licdn.com/li.lms-analytics/insight.min.js and sends analytics/conversion data to LinkedIn — but only after the visitor grants "marketing" consent. Service provided by LinkedIn Corporation (Microsoft).
+Terms of service: https://www.linkedin.com/legal/l/service-terms
+Privacy policy: https://www.linkedin.com/legal/privacy-policy
+
+= GitHub API (cookie-database update check) =
+Only when an administrator clicks "Check for database updates" (Settings &rarr; Biscotto &rarr; Scan), the plugin makes a single GET request to the public GitHub API at https://api.github.com/ to read the date of the latest commit that changed the bundled Open Cookie Database file. No personal data and no site data are sent — only the request for a public commit date — and the result is cached for 24 hours. There are no automatic or background calls. Service provided by GitHub, Inc. (Microsoft).
+Terms of service: https://docs.github.com/site-policy/github-terms/github-terms-of-service
+Privacy policy: https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement
+
 == Installation ==
 
-1. Upload the `consentkit` folder to `/wp-content/plugins/`.
+1. Upload the `biscotto` folder to `/wp-content/plugins/`.
 2. Activate the plugin from the Plugins menu.
-3. Go to Settings &rarr; ConsentKit and configure texts, cookies and integrations.
+3. Go to Settings &rarr; Biscotto and configure texts, cookies and integrations.
 
 == Frequently Asked Questions ==
 
@@ -51,7 +70,7 @@ Yes, with no extra configuration and no limits.
 The plugin implements the technical requirements of the 10 June 2021 guidelines. Overall compliance also depends on a correct privacy notice and on the proper classification of each site's cookies.
 
 = Does it send data to external services? =
-Only in one specific, opt-in case: the "Check for database updates" button (Settings → ConsentKit → Scan) contacts the public GitHub API only when you click it, to check whether the bundled Open Cookie Database snapshot is outdated. No personal or site data is sent — only a request for the latest commit date of a public file, cached for 24 hours. Everything else stays local: ConsentKit does not otherwise communicate with any third-party server. It loads the Google (Consent Mode/GTM) and LinkedIn scripts only after consent and only if you configure them. The optional consent log stays in your site's database and is pseudonymized.
+Yes, in the specific cases described under "External services" above, and always under your control. In short: the Google (Consent Mode/GTM) and LinkedIn scripts load only if you configure them and only after consent; the "Check for database updates" button contacts the public GitHub API only when you click it, sending no personal or site data. Everything else stays local — Biscotto does not otherwise communicate with any third-party server — and the optional consent log stays pseudonymized in your site's database.
 
 == Screenshots ==
 
@@ -63,8 +82,8 @@ Only in one specific, opt-in case: the "Check for database updates" button (Sett
 
 == Upgrade Notice ==
 
-= 1.4.1 =
-Cookies tab gains a "Create Cookie Policy page" button (pre-filled draft, ready to complete and publish) and an "Update last-modified date" button for the policy page.
+= 1.5.0 =
+Renamed to "Biscotto". Your saved settings are preserved. New: "Create Cookie Policy page" and "Update last-modified date" buttons (Cookies tab). Internal cleanups for WordPress.org guideline compliance.
 
 = 1.4.0 =
 Scan tab gains database-enrichment and update-check buttons; Cookies tab gains a one-click "copy shortcode" box for your cookie policy page.
@@ -83,10 +102,13 @@ First public release.
 
 == Changelog ==
 
-= 1.4.1 =
+= 1.5.0 =
+* Renamed to "Biscotto – Cookie Consent & Consent Mode" (formerly ConsentKit); the text domain is now `biscotto`. Your saved settings are preserved.
 * New: "Create Cookie Policy page" button (Cookies tab) generates a draft page pre-filled with boilerplate legal text and the `[consentkit_cookie_policy]` shortcode already in place, clearly marked as needing your own details before publishing. Safe to click repeatedly: it opens the existing draft instead of creating duplicates.
 * New: "Update last-modified date" button (Cookies tab) and `[consentkit_last_updated]` shortcode: the "last updated" line on your cookie policy page is now a manual, explicit action instead of a date frozen at page creation.
 * Improved: Integrations tab now has a short explanation of what each toggle does and when to use it.
+* Compliance: the Consent Mode v2 default and the Google Tag Manager loader are now added with `wp_add_inline_script()` on enqueued handles instead of being printed inline; the cookie-registry admin behaviour moved to `admin/js/cookies.js`, enqueued with `wp_enqueue_script()`.
+* Docs: added an "External services" section documenting Google Tag Manager, the LinkedIn Insight Tag and the on-demand GitHub update check (what is sent, when, and links to each service's terms and privacy policy).
 
 = 1.4.0 =
 * New: "Enrich from database" button (Scan tab) fills in missing service, category, retention period and privacy-policy link for scan suggestions using a bundled copy of Open Cookie Database (Apache-2.0, no external calls). Never overwrites a field you already set.

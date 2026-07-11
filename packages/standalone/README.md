@@ -1,11 +1,11 @@
-# ConsentKit — Standalone (siti non-WordPress)
+# Biscotto — Standalone (siti non-WordPress)
 
 Usa questa versione su siti statici, Shopify, Webflow, framework JS, ecc. È lo stesso core di `packages/core`, distribuito con la config scritta a mano.
 
 ## File
 
 - `consent-mode-default.js` — snippet da inlinare nel `<head>` **prima** di GTM.
-- `consentkit.js` — il core consent manager (= `packages/core/src/consent-manager.js`).
+- `biscotto.js` — il core consent manager (= `packages/core/src/consent-manager.js`).
 - `banner.css` — stili del banner.
 - `config-generator.html` — apri nel browser per generare la config con un form.
 
@@ -24,9 +24,9 @@ gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personali
 ### 2. Config + core — prima di `</body>`
 
 ```html
-<link rel="stylesheet" href="/consentkit/banner.css">
+<link rel="stylesheet" href="/biscotto/banner.css">
 <script>
-window.ckConfig = {
+window.biscottoConfig = {
   version: "1.0",
   policyVersion: "2026-06",      // incrementa per forzare il re-consent
   consentDuration: 365,
@@ -55,19 +55,19 @@ window.ckConfig = {
   }
 };
 </script>
-<script src="/consentkit/consentkit.js" defer></script>
+<script src="/biscotto/biscotto.js" defer></script>
 ```
 
 ### 3. Prior blocking dei tuoi tag
 
-Tutti gli script che installano cookie non tecnici vanno **bloccati** così, e ConsentKit li attiva al consenso della categoria:
+Tutti gli script che installano cookie non tecnici vanno **bloccati** così, e Biscotto li attiva al consenso della categoria:
 
 ```html
 <!-- esempio: uno script marketing -->
-<script type="text/plain" data-ck-category="marketing" data-src="https://example.com/pixel.js"></script>
+<script type="text/plain" data-biscotto-category="marketing" data-src="https://example.com/pixel.js"></script>
 
 <!-- esempio: script inline -->
-<script type="text/plain" data-ck-category="analytics">
+<script type="text/plain" data-biscotto-category="analytics">
   console.log('parte solo dopo consenso analytics');
 </script>
 ```
@@ -75,11 +75,11 @@ Tutti gli script che installano cookie non tecnici vanno **bloccati** così, e C
 ## API JS
 
 ```js
-ConsentKit.open();        // apre il pannello preferenze
-ConsentKit.acceptAll();
-ConsentKit.rejectAll();
-ConsentKit.getConsent();  // { necessary, analytics, marketing, preferences }
-ConsentKit.reset();       // cancella e ricarica
+Biscotto.open();        // apre il pannello preferenze
+Biscotto.acceptAll();
+Biscotto.rejectAll();
+Biscotto.getConsent();  // { necessary, analytics, marketing, preferences }
+Biscotto.reset();       // cancella e ricarica
 ```
 
-Per riaprire le preferenze da un link nel footer: `<a href="#" onclick="ConsentKit.open();return false">Cookie</a>`.
+Per riaprire le preferenze da un link nel footer: `<a href="#" onclick="Biscotto.open();return false">Cookie</a>`.
