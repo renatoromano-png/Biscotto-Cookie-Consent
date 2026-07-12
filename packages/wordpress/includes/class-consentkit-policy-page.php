@@ -85,7 +85,7 @@ class ConsentKit_Policy_Page {
 	 */
 	public function handle_create() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Non hai i permessi per questa azione.', 'consentkit' ) );
+			wp_die( esc_html__( 'Non hai i permessi per questa azione.', 'biscotto-cookie-consent' ) );
 		}
 		check_admin_referer( self::ACTION );
 
@@ -97,7 +97,7 @@ class ConsentKit_Policy_Page {
 
 		$page_id = wp_insert_post(
 			array(
-				'post_title'   => __( 'Cookie Policy', 'consentkit' ),
+				'post_title'   => __( 'Cookie Policy', 'biscotto-cookie-consent' ),
 				'post_content' => $this->default_content(),
 				'post_status'  => 'draft',
 				'post_type'    => 'page',
@@ -124,7 +124,7 @@ class ConsentKit_Policy_Page {
 	 */
 	public function handle_update_date() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Non hai i permessi per questa azione.', 'consentkit' ) );
+			wp_die( esc_html__( 'Non hai i permessi per questa azione.', 'biscotto-cookie-consent' ) );
 		}
 		check_admin_referer( self::DATE_ACTION );
 
@@ -169,7 +169,7 @@ class ConsentKit_Policy_Page {
 		}
 
 		if ( isset( $_GET['ck_policy_date'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Data di ultima modifica della Cookie Policy aggiornata a oggi.', 'consentkit' ) . '</p></div>';
+			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Data di ultima modifica della Cookie Policy aggiornata a oggi.', 'biscotto-cookie-consent' ) . '</p></div>';
 			return;
 		}
 
@@ -180,7 +180,7 @@ class ConsentKit_Policy_Page {
 		$page_id = isset( $_GET['ck_policy_page_id'] ) ? absint( $_GET['ck_policy_page_id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		if ( 'error' === $result ) {
-			echo '<div class="notice notice-error"><p>' . esc_html__( 'Non è stato possibile creare la pagina Cookie Policy.', 'consentkit' ) . '</p></div>';
+			echo '<div class="notice notice-error"><p>' . esc_html__( 'Non è stato possibile creare la pagina Cookie Policy.', 'biscotto-cookie-consent' ) . '</p></div>';
 			return;
 		}
 
@@ -190,14 +190,14 @@ class ConsentKit_Policy_Page {
 
 		$edit_link = get_edit_post_link( $page_id, 'raw' );
 		$message   = 'created' === $result
-			? __( 'Bozza della pagina Cookie Policy creata.', 'consentkit' )
-			: __( 'Esiste già una pagina Cookie Policy creata da qui.', 'consentkit' );
+			? __( 'Bozza della pagina Cookie Policy creata.', 'biscotto-cookie-consent' )
+			: __( 'Esiste già una pagina Cookie Policy creata da qui.', 'biscotto-cookie-consent' );
 		?>
 		<div class="notice notice-success is-dismissible">
 			<p>
 				<?php echo esc_html( $message ); ?>
 				<?php if ( $edit_link ) : ?>
-					<a href="<?php echo esc_url( $edit_link ); ?>"><?php esc_html_e( 'Aprila per completare i dati del titolare del sito e pubblicarla.', 'consentkit' ); ?></a>
+					<a href="<?php echo esc_url( $edit_link ); ?>"><?php esc_html_e( 'Aprila per completare i dati del titolare del sito e pubblicarla.', 'biscotto-cookie-consent' ); ?></a>
 				<?php endif; ?>
 			</p>
 		</div>
@@ -211,9 +211,8 @@ class ConsentKit_Policy_Page {
 	 * @return string
 	 */
 	private function default_content() {
-		return <<<HTML
-<!-- wp:paragraph -->
-<p><strong>⚠️ Bozza generata automaticamente da ConsentKit.</strong> Prima di pubblicare: sostituisci i testi tra parentesi quadre (es. [Ragione sociale]) con i dati reali del titolare del sito, compila i dettagli di contatto al paragrafo 10 e verifica che le categorie descritte corrispondano ai cookie effettivamente presenti nel tab Cookie.</p>
+		return '<!-- wp:paragraph -->
+<p><strong>⚠️ Bozza generata automaticamente da Biscotto.</strong> Prima di pubblicare: sostituisci i testi tra parentesi quadre (es. [Ragione sociale]) con i dati reali del titolare del sito, compila i dettagli di contatto al paragrafo 10 e verifica che le categorie descritte corrispondano ai cookie effettivamente presenti nel tab Cookie.</p>
 <!-- /wp:paragraph -->
 
 <!-- wp:heading -->
@@ -225,7 +224,7 @@ class ConsentKit_Policy_Page {
 <!-- /wp:paragraph -->
 
 <!-- wp:paragraph -->
-<p><em>Questa cookie policy è stata aggiornata l'ultima volta: [consentkit_last_updated]</em></p>
+<p><em>Questa cookie policy è stata aggiornata l\'ultima volta: [consentkit_last_updated]</em></p>
 <!-- /wp:paragraph -->
 
 <!-- wp:heading {"level":3} -->
@@ -253,7 +252,7 @@ class ConsentKit_Policy_Page {
 <!-- /wp:paragraph -->
 
 <!-- wp:heading {"level":3} -->
-<h3>4. Cos'è un web beacon?</h3>
+<h3>4. Cos\'è un web beacon?</h3>
 <!-- /wp:heading -->
 
 <!-- wp:paragraph -->
@@ -386,7 +385,6 @@ class ConsentKit_Policy_Page {
 
 <!-- wp:paragraph -->
 <p>L&#8217;elenco dei cookie riportato al paragrafo 6 è generato automaticamente in base ai servizi e ai cookie effettivamente rilevati sul Sito. La data di ultima modifica di questa pagina è riportata in cima al documento.</p>
-<!-- /wp:paragraph -->
-HTML;
+<!-- /wp:paragraph -->';
 	}
 }

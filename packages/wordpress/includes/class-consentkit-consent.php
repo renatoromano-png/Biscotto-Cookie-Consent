@@ -28,15 +28,15 @@ class ConsentKit_Consent {
 	public static function default_settings() {
 		return array(
 			// --- Generale ---
-			'title'                => __( 'Utilizziamo i cookie', 'biscotto' ),
-			'body'                 => __( 'Usiamo cookie tecnici e, previo consenso, cookie di analytics e marketing per migliorare il sito e le campagne. Puoi accettare, rifiutare o gestire le preferenze.', 'biscotto' ),
-			'accept_label'         => __( 'Accetta tutto', 'biscotto' ),
-			'reject_label'         => __( 'Rifiuta', 'biscotto' ),
-			'customize_label'      => __( 'Gestisci preferenze', 'biscotto' ),
-			'save_label'           => __( 'Salva preferenze', 'biscotto' ),
-			'close_label'          => __( 'Chiudi', 'biscotto' ),
-			'review_label'         => __( 'Rivedi le tue scelte sui cookie', 'biscotto' ),
-			'prefs_title'          => __( 'Preferenze cookie', 'biscotto' ),
+			'title'                => __( 'Utilizziamo i cookie', 'biscotto-cookie-consent' ),
+			'body'                 => __( 'Usiamo cookie tecnici e, previo consenso, cookie di analytics e marketing per migliorare il sito e le campagne. Puoi accettare, rifiutare o gestire le preferenze.', 'biscotto-cookie-consent' ),
+			'accept_label'         => __( 'Accetta tutto', 'biscotto-cookie-consent' ),
+			'reject_label'         => __( 'Rifiuta', 'biscotto-cookie-consent' ),
+			'customize_label'      => __( 'Gestisci preferenze', 'biscotto-cookie-consent' ),
+			'save_label'           => __( 'Salva preferenze', 'biscotto-cookie-consent' ),
+			'close_label'          => __( 'Chiudi', 'biscotto-cookie-consent' ),
+			'review_label'         => __( 'Rivedi le tue scelte sui cookie', 'biscotto-cookie-consent' ),
+			'prefs_title'          => __( 'Preferenze cookie', 'biscotto-cookie-consent' ),
 			'primary_color'        => '#2563eb',
 			'primary_text_color'   => '',           // '' = default (#ffffff): testo sui pulsanti
 			'bg_color'             => '',           // '' = automatico (chiaro/scuro di sistema)

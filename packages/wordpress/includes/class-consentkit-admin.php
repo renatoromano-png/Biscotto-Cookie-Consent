@@ -22,8 +22,8 @@ class ConsentKit_Admin {
 
 	public function register_menu() {
 		add_options_page(
-			__( 'Biscotto', 'biscotto' ),
-			__( 'Biscotto', 'biscotto' ),
+			__( 'Biscotto', 'biscotto-cookie-consent' ),
+			__( 'Biscotto', 'biscotto-cookie-consent' ),
 			'manage_options',
 			self::PAGE_SLUG,
 			array( $this, 'render_page' )
@@ -32,7 +32,7 @@ class ConsentKit_Admin {
 
 	public function settings_link( $links ) {
 		$url = admin_url( 'options-general.php?page=' . self::PAGE_SLUG );
-		array_unshift( $links, '<a href="' . esc_url( $url ) . '">' . esc_html__( 'Impostazioni', 'biscotto' ) . '</a>' );
+		array_unshift( $links, '<a href="' . esc_url( $url ) . '">' . esc_html__( 'Impostazioni', 'biscotto-cookie-consent' ) . '</a>' );
 		return $links;
 	}
 
@@ -70,39 +70,39 @@ class ConsentKit_Admin {
 					'timeoutMs'  => 12000,
 					'maxUrls'    => 10,
 					'categories' => array(
-						'necessary'   => __( 'Necessari', 'biscotto' ),
-						'analytics'   => __( 'Analytics', 'biscotto' ),
-						'marketing'   => __( 'Marketing', 'biscotto' ),
-						'preferences' => __( 'Preferenze', 'biscotto' ),
+						'necessary'   => __( 'Necessari', 'biscotto-cookie-consent' ),
+						'analytics'   => __( 'Analytics', 'biscotto-cookie-consent' ),
+						'marketing'   => __( 'Marketing', 'biscotto-cookie-consent' ),
+						'preferences' => __( 'Preferenze', 'biscotto-cookie-consent' ),
 					),
 					'i18n'       => array(
-						'scanningServer' => __( 'Analisi rapida delle pagine…', 'biscotto' ),
-						'scanningHome'   => __( 'Analisi a runtime della homepage…', 'biscotto' ),
-						'classifying'  => __( 'Classificazione dei risultati…', 'biscotto' ),
-						'done'         => __( 'Scansione completata.', 'biscotto' ),
-						'error'        => __( 'Si è verificato un errore.', 'biscotto' ),
-						'noUrls'       => __( 'Inserisci almeno un URL.', 'biscotto' ),
-						'nothing'      => __( 'Nessun cookie o servizio di terze parti rilevato.', 'biscotto' ),
-						'noneSelected' => __( 'Nessuna riga selezionata.', 'biscotto' ),
-						'importing'    => __( 'Importazione…', 'biscotto' ),
+						'scanningServer' => __( 'Analisi rapida delle pagine…', 'biscotto-cookie-consent' ),
+						'scanningHome'   => __( 'Analisi a runtime della homepage…', 'biscotto-cookie-consent' ),
+						'classifying'  => __( 'Classificazione dei risultati…', 'biscotto-cookie-consent' ),
+						'done'         => __( 'Scansione completata.', 'biscotto-cookie-consent' ),
+						'error'        => __( 'Si è verificato un errore.', 'biscotto-cookie-consent' ),
+						'noUrls'       => __( 'Inserisci almeno un URL.', 'biscotto-cookie-consent' ),
+						'nothing'      => __( 'Nessun cookie o servizio di terze parti rilevato.', 'biscotto-cookie-consent' ),
+						'noneSelected' => __( 'Nessuna riga selezionata.', 'biscotto-cookie-consent' ),
+						'importing'    => __( 'Importazione…', 'biscotto-cookie-consent' ),
 						/* translators: %d: numero di voci aggiunte al registro. */
-						'imported'     => __( '%d voci aggiunte al registro. Ricarica il tab Cookie per vederle.', 'biscotto' ),
-						'sourceCookie' => __( 'Cookie', 'biscotto' ),
-						'sourceDomain' => __( 'Dominio', 'biscotto' ),
-						'tooMany'      => __( 'Massimo 10 URL: ho scansionato i primi 10.', 'biscotto' ),
+						'imported'     => __( '%d voci aggiunte al registro. Ricarica il tab Cookie per vederle.', 'biscotto-cookie-consent' ),
+						'sourceCookie' => __( 'Cookie', 'biscotto-cookie-consent' ),
+						'sourceDomain' => __( 'Dominio', 'biscotto-cookie-consent' ),
+						'tooMany'      => __( 'Massimo 10 URL: ho scansionato i primi 10.', 'biscotto-cookie-consent' ),
 						/* translators: %d: numero di URL esterni ignorati. */
-						'externalSkipped' => __( '%d URL esterni ignorati (si scansiona solo questo sito).', 'biscotto' ),
-						'info'         => __( 'Info', 'biscotto' ),
-						'enriching'    => __( 'Ricerca nel database…', 'biscotto' ),
+						'externalSkipped' => __( '%d URL esterni ignorati (si scansiona solo questo sito).', 'biscotto-cookie-consent' ),
+						'info'         => __( 'Info', 'biscotto-cookie-consent' ),
+						'enriching'    => __( 'Ricerca nel database…', 'biscotto-cookie-consent' ),
 						/* translators: %d: numero di campi completati. */
-						'enriched'     => __( '%d campi completati dal database.', 'biscotto' ),
-						'enrichedNone' => __( 'Nessun campo aggiuntivo trovato nel database.', 'biscotto' ),
-						'checkingDb'        => __( 'Verifica in corso…', 'biscotto' ),
-						'dbUpToDate'        => __( 'Database aggiornato: nessun aggiornamento disponibile.', 'biscotto' ),
+						'enriched'     => __( '%d campi completati dal database.', 'biscotto-cookie-consent' ),
+						'enrichedNone' => __( 'Nessun campo aggiuntivo trovato nel database.', 'biscotto-cookie-consent' ),
+						'checkingDb'        => __( 'Verifica in corso…', 'biscotto-cookie-consent' ),
+						'dbUpToDate'        => __( 'Database aggiornato: nessun aggiornamento disponibile.', 'biscotto-cookie-consent' ),
 						/* translators: %s: data dell'ultimo aggiornamento upstream (AAAA-MM-GG). */
-						'dbUpdateAvailable' => __( 'È disponibile un aggiornamento del database (ultima modifica upstream: %s).', 'biscotto' ),
-						'dbGithubLink'      => __( 'Vedi su GitHub', 'biscotto' ),
-						'dbCheckError'      => __( 'Impossibile verificare ora. Riprova più tardi.', 'biscotto' ),
+						'dbUpdateAvailable' => __( 'È disponibile un aggiornamento del database (ultima modifica upstream: %s).', 'biscotto-cookie-consent' ),
+						'dbGithubLink'      => __( 'Vedi su GitHub', 'biscotto-cookie-consent' ),
+						'dbCheckError'      => __( 'Impossibile verificare ora. Riprova più tardi.', 'biscotto-cookie-consent' ),
 					),
 				)
 			);
@@ -115,8 +115,8 @@ class ConsentKit_Admin {
 				'consentkit-cookies',
 				'consentkitCookies',
 				array(
-					'confirmClear' => __( 'Svuotare tutto il registro cookie? Le righe verranno rimosse; salva per confermare.', 'biscotto' ),
-					'copied'       => __( 'Copiato!', 'biscotto' ),
+					'confirmClear' => __( 'Svuotare tutto il registro cookie? Le righe verranno rimosse; salva per confermare.', 'biscotto-cookie-consent' ),
+					'copied'       => __( 'Copiato!', 'biscotto-cookie-consent' ),
 				)
 			);
 		}
@@ -220,15 +220,15 @@ class ConsentKit_Admin {
 		}
 		$settings = ConsentKit::get_settings();
 		$tabs     = array(
-			'general'      => __( 'Generale', 'biscotto' ),
-			'cookies'      => __( 'Cookie', 'biscotto' ),
-			'scan'         => __( 'Scansione', 'biscotto' ),
-			'integrations' => __( 'Integrazioni', 'biscotto' ),
+			'general'      => __( 'Generale', 'biscotto-cookie-consent' ),
+			'cookies'      => __( 'Cookie', 'biscotto-cookie-consent' ),
+			'scan'         => __( 'Scansione', 'biscotto-cookie-consent' ),
+			'integrations' => __( 'Integrazioni', 'biscotto-cookie-consent' ),
 		);
 		$active = isset( $_GET['tab'] ) && isset( $tabs[ $_GET['tab'] ] ) ? sanitize_key( $_GET['tab'] ) : 'general'; // phpcs:ignore WordPress.Security.NonceVerification
 		?>
 		<div class="wrap consentkit-wrap">
-			<h1><?php esc_html_e( 'Biscotto', 'biscotto' ); ?></h1>
+			<h1><?php esc_html_e( 'Biscotto', 'biscotto-cookie-consent' ); ?></h1>
 
 			<h2 class="nav-tab-wrapper">
 				<?php foreach ( $tabs as $slug => $label ) : ?>
