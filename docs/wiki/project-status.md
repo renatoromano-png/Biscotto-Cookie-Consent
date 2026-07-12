@@ -14,20 +14,23 @@
 - Risolto errore Plugin Check all'upload: **heredoc → stringa PHP**.
 - **v1.5.2**: fix degli ultimi 5 rilievi di Plugin Check — lettura CSV via **WP_Filesystem** (niente fopen/fclose) e `wp_unslash`+`sanitize_key` su `$_GET['page']`.
 - **Verificato dal vivo su Laragon**: attivazione pulita, generazione Cookie Policy ok, e **Plugin Check completo = 0 errori / 0 warning**.
+- **v1.5.2 rilasciata su GitHub** e **caricata su wordpress.org** (sostituisce la 1.5.1).
+- **Risposta inviata** a `plugins@wordpress.org` chiedendo lo slug `biscotto-cookie-consent`. Ora la palla è al revisore.
 **Decisioni prese:** ADR-002 (nome/slug definitivo).
 **Nuove domande emerse:** nessuna.
 
 ---
 
 ## Prossimi passi immediati
-1. [ ] **Ricaricare** `dist/biscotto-cookie-consent.zip` (**v1.5.2**) su https://wordpress.org/plugins/developers/add/ — sostituisce la 1.5.1.
-2. [ ] **Rispondere** alla mail `plugins@wordpress.org` chiedendo ESPLICITAMENTE lo slug `biscotto-cookie-consent` (i permalink non si cambiano solo nel codice). Bozza rigenerabile.
-3. [ ] (Opzionale) Aggiornare `Plugin URI`/`Author URI` header al repo `Biscotto-Cookie-Consent` alla prossima versione.
+1. [ ] **Attendere la risposta del revisore WordPress.org.** Se approva → il plugin va live con slug `biscotto-cookie-consent`. Se solleva nuovi punti → affrontarli.
+2. [ ] (Opzionale) Aggiornare `Plugin URI`/`Author URI` header al repo `Biscotto-Cookie-Consent` alla prossima versione.
+
+*(Fatto in questa sessione: v1.5.2 su GitHub + caricata su wordpress.org + risposta inviata al revisore con richiesta slug.)*
 
 ---
 
 ## Dipendenze bloccanti
-- Review WordPress.org → ⏳ in corso (attesa ri-upload v1.5.2 + risposta mail)
+- Risposta del revisore WordPress.org → ⏳ in attesa (v1.5.2 caricata, mail con richiesta slug inviata: tutto dalla nostra parte è fatto)
 - Approvazione dello slug `biscotto-cookie-consent` dal team WP → ❓ da confermare (lo slug è ancora modificabile finché non approvato)
 
 ---
