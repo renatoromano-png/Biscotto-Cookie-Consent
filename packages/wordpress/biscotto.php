@@ -3,7 +3,7 @@
  * Plugin Name:       Biscotto – Cookie Consent
  * Plugin URI:        https://github.com/renatoromano-png/Biscotto
  * Description:       GDPR/ePrivacy cookie consent compliant with the Italian DPA (Garante) guidelines: Google Consent Mode v2, GTM and LinkedIn. No page or CPT limits.
- * Version:           1.5.1
+ * Version:           1.5.2
  * Requires at least: 5.9
  * Requires PHP:      7.4
  * Author:            Food & Tech
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Accesso diretto vietato.
 }
 
-define( 'CONSENTKIT_VERSION', '1.5.1' );
+define( 'CONSENTKIT_VERSION', '1.5.2' );
 define( 'CONSENTKIT_FILE', __FILE__ );
 define( 'CONSENTKIT_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CONSENTKIT_URL', plugin_dir_url( __FILE__ ) );

@@ -32,7 +32,9 @@ ID,Platform,Category,Cookie / Data Key name,Domain,Description,Retention period,
 CSV;
 file_put_contents( $fixture, $csv );
 
-$index = ConsentKit_Cookie_Database::build_index( $fixture );
+// Parsing puro dal contenuto (build_index() legge il file via WP_Filesystem,
+// non disponibile in questo test standalone senza WordPress).
+$index = ConsentKit_Cookie_Database::build_index_from_string( $csv );
 
 // --- Exact cookie match ------------------------------------------------
 $m = ConsentKit_Cookie_Database::lookup_cookie( '_ga_test', $index );

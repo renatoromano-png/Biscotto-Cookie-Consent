@@ -164,7 +164,7 @@ class ConsentKit_Policy_Page {
 	 * Avviso con esito subito dopo la creazione della pagina, o dopo l'aggiornamento data.
 	 */
 	public function maybe_render_notice() {
-		if ( 'consentkit' !== ( $_GET['page'] ?? '' ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( 'consentkit' !== sanitize_key( wp_unslash( $_GET['page'] ?? '' ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return;
 		}
 

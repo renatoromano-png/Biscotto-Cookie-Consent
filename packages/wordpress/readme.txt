@@ -4,7 +4,7 @@ Tags: cookie, consent, gdpr, cookie banner, consent mode
 Requires at least: 5.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.5.1
+Stable tag: 1.5.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,6 +101,9 @@ Adds a runtime cookie scanner to detect cookies and third-party services loaded 
 First public release.
 
 == Changelog ==
+
+= 1.5.2 =
+* Fixed: the bundled cookie database is now read via WP_Filesystem instead of direct PHP file calls, and the Cookie Policy admin notice now unslashes/sanitizes its input — both to satisfy the WordPress.org Plugin Check.
 
 = 1.5.1 =
 * Renamed to "Biscotto – Cookie Consent"; the text domain and slug are now `biscotto-cookie-consent`, and every translatable string uses that same, slug-matching text domain.

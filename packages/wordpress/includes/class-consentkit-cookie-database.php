@@ -32,24 +32,75 @@ class ConsentKit_Cookie_Database {
 	 * @return array{exact: array, wildcard: array, domain: array}
 	 */
 	public static function build_index( $csv_path ) {
+		$csv = self::read_csv_file( $csv_path );
+		if ( '' === $csv ) {
+			return array(
+				'exact'    => array(),
+				'wildcard' => array(),
+				'domain'   => array(),
+			);
+		}
+		return self::build_index_from_string( $csv );
+	}
+
+	/**
+	 * Legge il CSV bundlato tramite WP_Filesystem (niente fopen/fread diretti,
+	 * cfr. linee guida WordPress.org). È un file locale incluso nel plugin:
+	 * nessuna chiamata esterna. Ritorna stringa vuota se illeggibile.
+	 *
+	 * @param string $csv_path Percorso del CSV.
+	 * @return string
+	 */
+	private static function read_csv_file( $csv_path ) {
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			if ( ! defined( 'ABSPATH' ) || ! file_exists( ABSPATH . 'wp-admin/includes/file.php' ) ) {
+				return '';
+			}
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+
+		global $wp_filesystem;
+		if ( empty( $wp_filesystem ) ) {
+			WP_Filesystem();
+		}
+
+		if ( empty( $wp_filesystem ) || ! $wp_filesystem->exists( $csv_path ) ) {
+			return '';
+		}
+
+		$contents = $wp_filesystem->get_contents( $csv_path );
+		return is_string( $contents ) ? $contents : '';
+	}
+
+	/**
+	 * Costruisce l'indice a partire dal contenuto CSV già in memoria.
+	 * Parsing puro (str_getcsv riga per riga), senza I/O su file: testabile
+	 * in isolamento. Il dataset non contiene newline dentro i campi quotati,
+	 * quindi lo split per righe è sicuro.
+	 *
+	 * @param string $csv Contenuto del CSV.
+	 * @return array{exact: array, wildcard: array, domain: array}
+	 */
+	public static function build_index_from_string( $csv ) {
 		$index = array(
 			'exact'    => array(),
 			'wildcard' => array(),
 			'domain'   => array(),
 		);
 
-		$handle = @fopen( $csv_path, 'r' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors -- file può mancare, gestito sotto
-		if ( ! $handle ) {
-			return $index;
-		}
+		$lines  = preg_split( '/\r\n|\r|\n/', (string) $csv );
+		$header = null;
 
-		$header = fgetcsv( $handle );
-		if ( ! is_array( $header ) ) {
-			fclose( $handle );
-			return $index;
-		}
+		foreach ( $lines as $line ) {
+			if ( '' === $line ) {
+				continue;
+			}
+			$cols = str_getcsv( $line );
 
-		while ( ( $cols = fgetcsv( $handle ) ) !== false ) {
+			if ( null === $header ) {
+				$header = $cols;
+				continue;
+			}
 			if ( count( $cols ) !== count( $header ) ) {
 				continue; // riga malformata, salta
 			}
@@ -80,8 +131,6 @@ class ConsentKit_Cookie_Database {
 				$index['domain'][ $domain ] = $entry;
 			}
 		}
-
-		fclose( $handle );
 
 		return $index;
 	}
