@@ -3,8 +3,17 @@
 | ID | Titolo | Stato | Data |
 |----|--------|-------|------|
 | ADR-001 | Adottare project-wiki come memoria persistente | ACCETTATO | 2026-07-12 |
+| ADR-002 | Nome e slug del plugin per WordPress.org | ACCETTATO | 2026-07-12 |
 
 ---
+
+## ADR-002 — Nome e slug del plugin per WordPress.org
+**Data:** 2026-07-12
+**Stato:** ACCETTATO
+**Contesto:** La review WordPress.org ha bocciato il nome "ConsentKit" (potenziale marchio + somiglianza con altro plugin) e il revisore aveva riservato d'ufficio lo slug `foodandtech-cookie-consent-manager`. La regola WP impone text domain = slug.
+**Decisione:** Nome display "Biscotto – Cookie Consent", slug e text domain `biscotto-cookie-consent`. Chiediamo al team WP di riservare questo slug al posto di `foodandtech-cookie-consent-manager`.
+**Razionale:** "Biscotto" è un marchio distintivo (nessun conflitto con "ConsentKit"); accostare "Cookie Consent" segue il pattern raccomandato da WP (termine distintivo + descrizione), riducendo il rischio dell'obiezione "troppo generico" che avrebbe avuto il solo "biscotto". Scartato: (a) accettare `foodandtech-cookie-consent-manager` — butta via il brand; (b) solo "Biscotto" — più a rischio genericità.
+**Conseguenze:** Rinominati header, readme, text domain (167 stringhe), nome cartella/zip in `package.ps1`. Lo slug resta modificabile finché il plugin non è approvato. Nomi interni (`ConsentKit_*`, `CONSENTKIT_*`, `class-consentkit-*.php`) invariati: prefisso valido, non richiesto dalla review.
 
 ## ADR-001 — Adottare la project-wiki come memoria persistente del progetto
 **Data:** 2026-07-12
