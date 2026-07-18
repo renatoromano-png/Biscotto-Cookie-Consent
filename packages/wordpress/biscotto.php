@@ -13,43 +13,43 @@
  * Text Domain:       biscotto
  * Domain Path:       /languages
  *
- * @package ConsentKit
+ * @package Biscotto
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Accesso diretto vietato.
 }
 
-define( 'CONSENTKIT_VERSION', '1.5.0' );
-define( 'CONSENTKIT_FILE', __FILE__ );
-define( 'CONSENTKIT_DIR', plugin_dir_path( __FILE__ ) );
-define( 'CONSENTKIT_URL', plugin_dir_url( __FILE__ ) );
-define( 'CONSENTKIT_OPTION', 'consentkit_settings' );
+define( 'BISCOTTO_VERSION', '1.5.0' );
+define( 'BISCOTTO_FILE', __FILE__ );
+define( 'BISCOTTO_DIR', plugin_dir_path( __FILE__ ) );
+define( 'BISCOTTO_URL', plugin_dir_url( __FILE__ ) );
+define( 'BISCOTTO_OPTION', 'biscotto_settings' );
 
-require_once CONSENTKIT_DIR . 'includes/class-consentkit-consent.php';
-require_once CONSENTKIT_DIR . 'includes/class-consentkit-frontend.php';
-require_once CONSENTKIT_DIR . 'includes/class-consentkit-admin.php';
-require_once CONSENTKIT_DIR . 'includes/class-consentkit-api.php';
-require_once CONSENTKIT_DIR . 'includes/class-consentkit-cookie-database.php';
-require_once CONSENTKIT_DIR . 'includes/class-consentkit-scanner.php';
-require_once CONSENTKIT_DIR . 'includes/class-consentkit-shortcodes.php';
-require_once CONSENTKIT_DIR . 'includes/class-consentkit.php';
+require_once BISCOTTO_DIR . 'includes/class-biscotto-consent.php';
+require_once BISCOTTO_DIR . 'includes/class-biscotto-frontend.php';
+require_once BISCOTTO_DIR . 'includes/class-biscotto-admin.php';
+require_once BISCOTTO_DIR . 'includes/class-biscotto-api.php';
+require_once BISCOTTO_DIR . 'includes/class-biscotto-cookie-database.php';
+require_once BISCOTTO_DIR . 'includes/class-biscotto-scanner.php';
+require_once BISCOTTO_DIR . 'includes/class-biscotto-shortcodes.php';
+require_once BISCOTTO_DIR . 'includes/class-biscotto.php';
 
 /**
  * All'attivazione: pre-popola le impostazioni con i default (cookie registry incluso).
  */
-function consentkit_activate() {
-	if ( false === get_option( CONSENTKIT_OPTION ) ) {
-		add_option( CONSENTKIT_OPTION, ConsentKit_Consent::default_settings() );
+function biscotto_activate() {
+	if ( false === get_option( BISCOTTO_OPTION ) ) {
+		add_option( BISCOTTO_OPTION, Biscotto_Consent::default_settings() );
 	}
-	ConsentKit_Api::maybe_create_log_table();
+	Biscotto_Api::maybe_create_log_table();
 }
-register_activation_hook( __FILE__, 'consentkit_activate' );
+register_activation_hook( __FILE__, 'biscotto_activate' );
 
 /**
  * Bootstrap.
  */
-function consentkit() {
-	return ConsentKit::instance();
+function biscotto() {
+	return Biscotto::instance();
 }
-add_action( 'plugins_loaded', 'consentkit' );
+add_action( 'plugins_loaded', 'biscotto' );

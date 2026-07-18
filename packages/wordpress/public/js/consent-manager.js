@@ -4,7 +4,7 @@
  * Vanilla JS, ZERO dipendenze (no jQuery). È il cuore portabile del prodotto:
  * gira identico su WordPress, siti statici, Shopify, ecc.
  *
- * VINCOLO ARCHITETTURALE (vedi consentkit-project.md §4.4):
+ * VINCOLO ARCHITETTURALE (vedi biscotto-project.md §4.4):
  *   legge la configurazione ESCLUSIVAMENTE da window.biscottoConfig.
  *   Non conosce WordPress né alcuna piattaforma specifica.
  *
@@ -85,7 +85,7 @@
     if (!cfg.logEndpoint) return;
     try {
       // Il nonce va nel body: sendBeacon non può impostare header custom, e il
-      // server lo verifica da lì (vedi class-consentkit-api.php).
+      // server lo verifica da lì (vedi class-biscotto-api.php).
       var body = JSON.stringify({
         nonce: cfg.logNonce || '',
         policyVersion: rec.policyVersion,

@@ -8,7 +8,7 @@ complianz-gdpr.*.zip
 ~$*.docx
 
 # --- Documento di progetto interno (siti pilota, analisi, rollout) ---
-consentkit-project.md
+biscotto-project.md
 
 # --- Artefatti di build ---
 dist/

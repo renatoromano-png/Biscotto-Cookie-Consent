@@ -2,7 +2,7 @@
 /**
  * Tab Cookie — registry editabile.
  *
- * @package ConsentKit
+ * @package Biscotto
  * @var array $settings Impostazioni correnti.
  */
 
@@ -10,9 +10,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$consentkit_opt     = CONSENTKIT_OPTION;
-$consentkit_cookies = isset( $settings['cookies'] ) && is_array( $settings['cookies'] ) ? $settings['cookies'] : array();
-$consentkit_cats    = array(
+$biscotto_opt     = BISCOTTO_OPTION;
+$biscotto_cookies = isset( $settings['cookies'] ) && is_array( $settings['cookies'] ) ? $settings['cookies'] : array();
+$biscotto_cats    = array(
 	'necessary'   => __( 'Necessari', 'biscotto' ),
 	'analytics'   => __( 'Analytics', 'biscotto' ),
 	'marketing'   => __( 'Marketing', 'biscotto' ),
@@ -22,7 +22,7 @@ $consentkit_cats    = array(
 /**
  * Stampa una riga della tabella cookie.
  */
-function consentkit_cookie_row( $i, $row, $opt, $cats ) {
+function biscotto_cookie_row( $i, $row, $opt, $cats ) {
 	$name     = isset( $row['name'] ) ? $row['name'] : '';
 	$service  = isset( $row['service'] ) ? $row['service'] : '';
 	$duration = isset( $row['duration'] ) ? $row['duration'] : '';
@@ -53,18 +53,18 @@ function consentkit_cookie_row( $i, $row, $opt, $cats ) {
 <div class="biscotto-copy-code">
 	<p class="description"><?php esc_html_e( 'Per pubblicare questo elenco nella tua pagina cookie policy, copia questo codice e incollalo nella pagina:', 'biscotto' ); ?></p>
 	<p>
-		<input type="text" id="biscotto-shortcode-copy" class="regular-text code" readonly="readonly" value="[consentkit_cookie_policy]" />
+		<input type="text" id="biscotto-shortcode-copy" class="regular-text code" readonly="readonly" value="[biscotto_cookie_policy]" />
 		<button type="button" class="button" id="biscotto-copy-shortcode"><?php esc_html_e( 'Copia', 'biscotto' ); ?></button>
 		<span id="biscotto-copy-status" class="biscotto-scan-status" aria-live="polite"></span>
 	</p>
 	<p class="description">
 		<?php esc_html_e( 'In alternativa puoi comporre la pagina con gli shortcode singoli:', 'biscotto' ); ?>
-		<code>[consentkit_cookie_table]</code> <?php esc_html_e( '(solo tabella cookie),', 'biscotto' ); ?>
-		<code>[consentkit_consent_settings]</code> <?php esc_html_e( '(solo stato consenso + pulsante).', 'biscotto' ); ?>
+		<code>[biscotto_cookie_table]</code> <?php esc_html_e( '(solo tabella cookie),', 'biscotto' ); ?>
+		<code>[biscotto_consent_settings]</code> <?php esc_html_e( '(solo stato consenso + pulsante).', 'biscotto' ); ?>
 	</p>
 </div>
 
-<table class="widefat striped consentkit-cookies">
+<table class="widefat striped biscotto-cookies">
 	<thead>
 		<tr>
 			<th><?php esc_html_e( 'Nome', 'biscotto' ); ?></th>
@@ -77,13 +77,13 @@ function consentkit_cookie_row( $i, $row, $opt, $cats ) {
 	</thead>
 	<tbody id="biscotto-cookie-rows">
 		<?php
-		$consentkit_i = 0;
-		foreach ( $consentkit_cookies as $consentkit_row ) {
-			consentkit_cookie_row( $consentkit_i, $consentkit_row, $consentkit_opt, $consentkit_cats );
-			$consentkit_i++;
+		$biscotto_i = 0;
+		foreach ( $biscotto_cookies as $biscotto_row ) {
+			biscotto_cookie_row( $biscotto_i, $biscotto_row, $biscotto_opt, $biscotto_cats );
+			$biscotto_i++;
 		}
 		// Riga template vuota (indice alto, ignorata se lasciata vuota dal sanitize).
-		consentkit_cookie_row( 9000, array( 'category' => 'necessary' ), $consentkit_opt, $consentkit_cats );
+		biscotto_cookie_row( 9000, array( 'category' => 'necessary' ), $biscotto_opt, $biscotto_cats );
 		?>
 	</tbody>
 </table>

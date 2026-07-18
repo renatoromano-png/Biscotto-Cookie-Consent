@@ -8,7 +8,7 @@
 ( function () {
 	'use strict';
 
-	var cfg = window.consentkitScan || {};
+	var cfg = window.biscottoScan || {};
 	var rowsData = [];
 
 	function $( id ) { return document.getElementById( id ); }

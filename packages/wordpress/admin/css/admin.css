@@ -1,13 +1,13 @@
 /* Biscotto — stili pannello admin */
-.consentkit-wrap .form-table th { width: 240px; }
-.consentkit-wrap .consentkit-cookies { max-width: 1100px; margin-top: 8px; }
-.consentkit-wrap .consentkit-cookies input[type="text"],
-.consentkit-wrap .consentkit-cookies input[type="url"] { width: 100%; }
-.consentkit-wrap .consentkit-cookies td { vertical-align: middle; }
-.consentkit-wrap .biscotto-remove-row { color: #b32d2e; text-decoration: none; font-size: 18px; line-height: 1; }
-.consentkit-wrap .biscotto-remove-row:hover { color: #dc3232; }
+.biscotto-wrap .form-table th { width: 240px; }
+.biscotto-wrap .biscotto-cookies { max-width: 1100px; margin-top: 8px; }
+.biscotto-wrap .biscotto-cookies input[type="text"],
+.biscotto-wrap .biscotto-cookies input[type="url"] { width: 100%; }
+.biscotto-wrap .biscotto-cookies td { vertical-align: middle; }
+.biscotto-wrap .biscotto-remove-row { color: #b32d2e; text-decoration: none; font-size: 18px; line-height: 1; }
+.biscotto-wrap .biscotto-remove-row:hover { color: #dc3232; }
 
 /* Tab Scansione */
-.consentkit-wrap .biscotto-scan-status { margin-left: 10px; font-style: italic; color: #50575e; }
-.consentkit-wrap .consentkit-scan .check-column { width: 32px; }
-.consentkit-wrap #biscotto-scan-results { margin-top: 16px; max-width: 1100px; }
+.biscotto-wrap .biscotto-scan-status { margin-left: 10px; font-style: italic; color: #50575e; }
+.biscotto-wrap .biscotto-scan .check-column { width: 32px; }
+.biscotto-wrap #biscotto-scan-results { margin-top: 16px; max-width: 1100px; }

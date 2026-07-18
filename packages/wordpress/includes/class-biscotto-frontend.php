@@ -2,14 +2,14 @@
 /**
  * Frontend: Consent Mode default nel <head>, enqueue core JS/CSS, biscottoConfig.
  *
- * @package ConsentKit
+ * @package Biscotto
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class ConsentKit_Frontend {
+class Biscotto_Frontend {
 
 	public function __construct() {
 		// Consent Mode v2 default + GTM nel <head> (§13.7) e core JS/CSS: tutto
@@ -36,10 +36,10 @@ class ConsentKit_Frontend {
 
 		// Consent Mode v2 default (denied): inline nel <head>, prima di GTM.
 		if ( $consent_mode ) {
-			wp_register_script( 'consentkit-consent-mode', false, array(), CONSENTKIT_VERSION, false );
-			wp_enqueue_script( 'consentkit-consent-mode' );
+			wp_register_script( 'biscotto-consent-mode', false, array(), BISCOTTO_VERSION, false );
+			wp_enqueue_script( 'biscotto-consent-mode' );
 			wp_add_inline_script(
-				'consentkit-consent-mode',
+				'biscotto-consent-mode',
 				"window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}"
 				. "gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',personalization_storage:'denied',functionality_storage:'granted',security_storage:'granted',wait_for_update:500});"
 			);
@@ -49,11 +49,11 @@ class ConsentKit_Frontend {
 		// è attivo, dipende da quello così viene stampato DOPO (ordine vincolante).
 		if ( $gtm ) {
 			$gtm_id = preg_replace( '/[^A-Z0-9\-]/', '', strtoupper( $gtm_id ) );
-			$deps   = $consent_mode ? array( 'consentkit-consent-mode' ) : array();
-			wp_register_script( 'consentkit-gtm', false, $deps, CONSENTKIT_VERSION, false );
-			wp_enqueue_script( 'consentkit-gtm' );
+			$deps   = $consent_mode ? array( 'biscotto-consent-mode' ) : array();
+			wp_register_script( 'biscotto-gtm', false, $deps, BISCOTTO_VERSION, false );
+			wp_enqueue_script( 'biscotto-gtm' );
 			wp_add_inline_script(
-				'consentkit-gtm',
+				'biscotto-gtm',
 				"(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});"
 				. "var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;"
 				. "j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})"
@@ -66,16 +66,16 @@ class ConsentKit_Frontend {
 	 * Enqueue del core (copiato da packages/core in fase di build) + config.
 	 */
 	public function enqueue_assets() {
-		$s = ConsentKit::get_settings();
+		$s = Biscotto::get_settings();
 
 		// Consent Mode v2 default + GTM nel <head>, prima del manager e dei tag.
 		$this->enqueue_head_snippets( $s );
 
 		wp_enqueue_style(
-			'consentkit-banner',
-			CONSENTKIT_URL . 'public/css/banner.css',
+			'biscotto-banner',
+			BISCOTTO_URL . 'public/css/banner.css',
 			array(),
-			CONSENTKIT_VERSION
+			BISCOTTO_VERSION
 		);
 
 		// Colori personalizzati via variabili CSS inline (vuoto = default/automatico).
@@ -107,21 +107,21 @@ class ConsentKit_Frontend {
 			}
 		}
 		if ( '' !== $ck_css ) {
-			wp_add_inline_style( 'consentkit-banner', ':root{' . $ck_css . '}' );
+			wp_add_inline_style( 'biscotto-banner', ':root{' . $ck_css . '}' );
 		}
 
 		wp_enqueue_script(
-			'consentkit-manager',
-			CONSENTKIT_URL . 'public/js/consent-manager.js',
+			'biscotto-manager',
+			BISCOTTO_URL . 'public/js/consent-manager.js',
 			array(),
-			CONSENTKIT_VERSION,
+			BISCOTTO_VERSION,
 			true
 		);
 
 		// wp_add_inline_script (non wp_localize_script): preserva booleani/int/null
 		// nell'oggetto biscottoConfig. Deve essere stampato PRIMA del core.
 		$config = wp_json_encode( $this->build_config( $s ) );
-		wp_add_inline_script( 'consentkit-manager', 'window.biscottoConfig = ' . $config . ';', 'before' );
+		wp_add_inline_script( 'biscotto-manager', 'window.biscottoConfig = ' . $config . ';', 'before' );
 	}
 
 	/**
@@ -161,7 +161,7 @@ class ConsentKit_Frontend {
 	 */
 	private function build_config( $s ) {
 		$config = array(
-			'version'           => CONSENTKIT_VERSION,
+			'version'           => BISCOTTO_VERSION,
 			'policyVersion'     => (string) $s['policy_version'],
 			'consentDuration'   => (int) $s['consent_duration'],
 			'repromptAfterDays' => (int) $s['reprompt_after_days'],
@@ -204,7 +204,7 @@ class ConsentKit_Frontend {
 
 		// Log server-side opzionale (§13.9).
 		if ( ! empty( $s['log_enabled'] ) ) {
-			$config['logEndpoint'] = esc_url_raw( rest_url( 'consentkit/v1/log' ) );
+			$config['logEndpoint'] = esc_url_raw( rest_url( 'biscotto/v1/log' ) );
 			$config['logNonce']    = wp_create_nonce( 'wp_rest' );
 		}
 

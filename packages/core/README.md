@@ -23,7 +23,7 @@ Il cuore portabile di Biscotto: consent manager in JavaScript vanilla, **zero di
 
 ## Conformità
 
-Implementa i requisiti tecnici delle Linee guida del Garante (doc. 9677876) e GDPR/ePrivacy — vedi `consentkit-project.md` §13. In sintesi: parità Accetta/Rifiuta, X = mantieni default, privacy by default, prior blocking, no scroll-consent, riproposizione ≥ 6 mesi, re-consent su cambio policy, revoca sempre accessibile.
+Implementa i requisiti tecnici delle Linee guida del Garante (doc. 9677876) e GDPR/ePrivacy — vedi `biscotto-project.md` §13. In sintesi: parità Accetta/Rifiuta, X = mantieni default, privacy by default, prior blocking, no scroll-consent, riproposizione ≥ 6 mesi, re-consent su cambio policy, revoca sempre accessibile.
 
 ## Build
 

@@ -2,12 +2,12 @@
  * Biscotto — Cookie registry editor (admin, Cookies tab).
  * --------------------------------------------------------------------------
  * Add/remove rows in the cookie registry, clear the registry, and copy the
- * cookie-policy shortcode. Translated strings arrive via window.consentkitCookies
+ * cookie-policy shortcode. Translated strings arrive via window.biscottoCookies
  * (wp_localize_script), so no PHP is echoed inline (WP.org guideline).
  * --------------------------------------------------------------------------
  */
 ( function () {
-	var cfg = window.consentkitCookies || {};
+	var cfg = window.biscottoCookies || {};
 	var idx = 9001;
 	var tbody = document.getElementById( 'biscotto-cookie-rows' );
 	if ( ! tbody ) {

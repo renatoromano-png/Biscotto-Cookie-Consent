@@ -1,13 +1,13 @@
 /**
  * Biscotto — Cookie policy page helper.
- * Popola lo stato del consenso negli shortcode [consentkit_consent_settings] /
- * [consentkit_cookie_policy] e collega i pulsanti "Gestisci le tue scelte" al
+ * Popola lo stato del consenso negli shortcode [biscotto_consent_settings] /
+ * [biscotto_cookie_policy] e collega i pulsanti "Gestisci le tue scelte" al
  * pannello preferenze. Si aggiorna in tempo reale via evento biscotto:consent.
  */
 (function (window, document) {
   'use strict';
 
-  var cfg = window.consentkitPolicy || {};
+  var cfg = window.biscottoPolicy || {};
   var labels = cfg.categories || {};
   var ORDER = ['necessary', 'analytics', 'marketing', 'preferences'];
 

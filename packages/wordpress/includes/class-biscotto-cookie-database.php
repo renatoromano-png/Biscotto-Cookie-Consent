@@ -5,14 +5,14 @@
  * riconosce un cookie/dominio (§14.6). Nessuna chiamata esterna qui: solo
  * parsing locale on-demand del CSV vendored (vedi includes/data/NOTICE.md).
  *
- * @package ConsentKit
+ * @package Biscotto
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class ConsentKit_Cookie_Database {
+class Biscotto_Cookie_Database {
 
 	/** Data dello snapshot vendored (deve combaciare con includes/data/NOTICE.md). */
 	const SNAPSHOT_DATE = '2026-07-04';
@@ -134,7 +134,7 @@ class ConsentKit_Cookie_Database {
 
 	/**
 	 * Mappa le 6 categorie di Open Cookie Database sulle 4 categorie Garante
-	 * di ConsentKit. Sconosciuta/vuota -> 'necessary' (prudente, l'admin rivede).
+	 * di Biscotto. Sconosciuta/vuota -> 'necessary' (prudente, l'admin rivede).
 	 *
 	 * @param string $csv_category Categoria come scritta nel CSV.
 	 * @return string

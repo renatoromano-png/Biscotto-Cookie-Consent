@@ -13,20 +13,20 @@
  *
  * Lo scan RILEVA; non blocca (il blocco di iframe/font è v1.2, §14.5).
  *
- * @package ConsentKit
+ * @package Biscotto
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class ConsentKit_Scanner {
+class Biscotto_Scanner {
 
 	/** Option in cui salviamo l'ultimo risultato di scan (per la revisione admin). */
-	const RESULTS_OPTION = 'consentkit_scan_results';
+	const RESULTS_OPTION = 'biscotto_scan_results';
 
 	/** Azione del nonce monouso che abilita lo scan-mode sul frontend. */
-	const SCAN_NONCE = 'consentkit_scan';
+	const SCAN_NONCE = 'biscotto_scan';
 
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
@@ -66,19 +66,19 @@ class ConsentKit_Scanner {
 			return;
 		}
 
-		// Pre-grant: scritto PRIMA del manager (handle consentkit-manager, già
+		// Pre-grant: scritto PRIMA del manager (handle biscotto-manager, già
 		// accodato dal frontend) così init() lo legge come consenso valido.
 		$pre_grant = "(function(){try{window.__biscottoScanMode=true;var pv=(window.biscottoConfig&&window.biscottoConfig.policyVersion)||'1';"
 			. "localStorage.setItem('biscotto_consent',JSON.stringify({version:'scan',policyVersion:String(pv),"
 			. "timestamp:Math.floor(Date.now()/1000),action:'granted_all',"
 			. "categories:{necessary:true,analytics:true,marketing:true,preferences:true}}));}catch(e){}})();";
-		wp_add_inline_script( 'consentkit-manager', $pre_grant, 'before' );
+		wp_add_inline_script( 'biscotto-manager', $pre_grant, 'before' );
 
 		wp_enqueue_script(
-			'consentkit-scan-collector',
-			CONSENTKIT_URL . 'public/js/scan-collector.js',
-			array( 'consentkit-manager' ),
-			CONSENTKIT_VERSION,
+			'biscotto-scan-collector',
+			BISCOTTO_URL . 'public/js/scan-collector.js',
+			array( 'biscotto-manager' ),
+			BISCOTTO_VERSION,
 			true
 		);
 	}
@@ -91,7 +91,7 @@ class ConsentKit_Scanner {
 		$can_manage = array( $this, 'permission_check' );
 
 		register_rest_route(
-			'consentkit/v1',
+			'biscotto/v1',
 			'/scan/collect',
 			array(
 				'methods'             => 'POST',
@@ -101,7 +101,7 @@ class ConsentKit_Scanner {
 		);
 
 		register_rest_route(
-			'consentkit/v1',
+			'biscotto/v1',
 			'/scan/import',
 			array(
 				'methods'             => 'POST',
@@ -111,7 +111,7 @@ class ConsentKit_Scanner {
 		);
 
 		register_rest_route(
-			'consentkit/v1',
+			'biscotto/v1',
 			'/scan/server',
 			array(
 				'methods'             => 'POST',
@@ -121,7 +121,7 @@ class ConsentKit_Scanner {
 		);
 
 		register_rest_route(
-			'consentkit/v1',
+			'biscotto/v1',
 			'/scan/enrich',
 			array(
 				'methods'             => 'POST',
@@ -131,7 +131,7 @@ class ConsentKit_Scanner {
 		);
 
 		register_rest_route(
-			'consentkit/v1',
+			'biscotto/v1',
 			'/scan/db-version',
 			array(
 				'methods'             => 'GET',
@@ -180,7 +180,7 @@ class ConsentKit_Scanner {
 				array(
 					'timeout'     => 10,
 					'redirection' => 3,
-					'user-agent'  => 'Biscotto-Scanner/' . CONSENTKIT_VERSION,
+					'user-agent'  => 'Biscotto-Scanner/' . BISCOTTO_VERSION,
 				)
 			);
 			if ( is_wp_error( $resp ) ) {
@@ -303,7 +303,7 @@ class ConsentKit_Scanner {
 		$params   = $request->get_json_params();
 		$incoming = isset( $params['cookies'] ) && is_array( $params['cookies'] ) ? $params['cookies'] : array();
 
-		$settings = ConsentKit::get_settings();
+		$settings = Biscotto::get_settings();
 		$registry = isset( $settings['cookies'] ) && is_array( $settings['cookies'] ) ? $settings['cookies'] : array();
 
 		// Indicizza il registry esistente per nome (case-insensitive) per evitare duplicati.
@@ -314,7 +314,7 @@ class ConsentKit_Scanner {
 			}
 		}
 
-		$cats  = ConsentKit_Consent::categories();
+		$cats  = Biscotto_Consent::categories();
 		$added = 0;
 		foreach ( $incoming as $row ) {
 			$name = isset( $row['name'] ) ? sanitize_text_field( $row['name'] ) : '';
@@ -334,7 +334,7 @@ class ConsentKit_Scanner {
 		}
 
 		$settings['cookies'] = $registry;
-		update_option( CONSENTKIT_OPTION, $settings );
+		update_option( BISCOTTO_OPTION, $settings );
 
 		return new WP_REST_Response(
 			array(
@@ -359,8 +359,8 @@ class ConsentKit_Scanner {
 		$params = $request->get_json_params();
 		$rows   = isset( $params['suggestions'] ) && is_array( $params['suggestions'] ) ? $params['suggestions'] : array();
 
-		$csv_path = CONSENTKIT_DIR . 'includes/data/open-cookie-database.csv';
-		$index    = ConsentKit_Cookie_Database::build_index( $csv_path );
+		$csv_path = BISCOTTO_DIR . 'includes/data/open-cookie-database.csv';
+		$index    = Biscotto_Cookie_Database::build_index( $csv_path );
 
 		$out = array();
 		foreach ( $rows as $row ) {
@@ -378,7 +378,7 @@ class ConsentKit_Scanner {
 	 * vuoti, senza mai toccare servizio/categoria già decisi.
 	 *
 	 * @param array $row   Riga suggerimento { name, service, category, duration, url_policy, source }.
-	 * @param array $index Indice da ConsentKit_Cookie_Database::build_index().
+	 * @param array $index Indice da Biscotto_Cookie_Database::build_index().
 	 * @return array Riga (eventualmente) arricchita.
 	 */
 	private function enrich_row( $row, $index ) {
@@ -394,8 +394,8 @@ class ConsentKit_Scanner {
 		}
 
 		$match = 'domain' === $source
-			? ConsentKit_Cookie_Database::lookup_domain( $name, $index )
-			: ConsentKit_Cookie_Database::lookup_cookie( $name, $index );
+			? Biscotto_Cookie_Database::lookup_domain( $name, $index )
+			: Biscotto_Cookie_Database::lookup_cookie( $name, $index );
 
 		if ( null === $match ) {
 			return $row;
@@ -435,24 +435,24 @@ class ConsentKit_Scanner {
 	 * @return WP_REST_Response
 	 */
 	public function db_version() {
-		$transient_key = 'consentkit_db_version_check';
+		$transient_key = 'biscotto_db_version_check';
 		$cached        = get_transient( $transient_key );
 		if ( is_array( $cached ) ) {
 			return new WP_REST_Response( $cached, 200 );
 		}
 
-		$bundled = ConsentKit_Cookie_Database::SNAPSHOT_DATE;
+		$bundled = Biscotto_Cookie_Database::SNAPSHOT_DATE;
 		$url     = sprintf(
 			'https://api.github.com/repos/%s/commits?path=%s&per_page=1',
-			ConsentKit_Cookie_Database::GITHUB_REPO,
-			ConsentKit_Cookie_Database::GITHUB_CSV_PATH
+			Biscotto_Cookie_Database::GITHUB_REPO,
+			Biscotto_Cookie_Database::GITHUB_CSV_PATH
 		);
 
 		$resp = wp_remote_get(
 			$url,
 			array(
 				'timeout'    => 10,
-				'user-agent' => 'Biscotto-Scanner/' . CONSENTKIT_VERSION,
+				'user-agent' => 'Biscotto-Scanner/' . BISCOTTO_VERSION,
 				'headers'    => array( 'Accept' => 'application/vnd.github+json' ),
 			)
 		);

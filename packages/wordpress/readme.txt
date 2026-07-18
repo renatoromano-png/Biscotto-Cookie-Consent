@@ -102,14 +102,14 @@ First public release.
 == Changelog ==
 
 = 1.5.0 =
-* Renamed to "Biscotto – Cookie Consent & Consent Mode" (formerly ConsentKit); the text domain is now `biscotto`. Your saved settings are preserved.
+* Renamed to "Biscotto – Cookie Consent & Consent Mode" (formerly Biscotto); the text domain is now `biscotto`. Your saved settings are preserved.
 * Compliance: the Consent Mode v2 default and the Google Tag Manager loader are now added with `wp_add_inline_script()` on enqueued handles instead of being printed inline; the cookie-registry admin behaviour moved to `admin/js/cookies.js`, enqueued with `wp_enqueue_script()`.
 * Docs: added an "External services" section documenting Google Tag Manager, the LinkedIn Insight Tag and the on-demand GitHub update check (what is sent, when, and links to each service's terms and privacy policy).
 
 = 1.4.0 =
 * New: "Enrich from database" button (Scan tab) fills in missing service, category, retention period and privacy-policy link for scan suggestions using a bundled copy of Open Cookie Database (Apache-2.0, no external calls). Never overwrites a field you already set.
 * New: "Check for database updates" button (Scan tab) checks, only when you click it, whether a newer snapshot of Open Cookie Database is available upstream on GitHub. No automatic checks, no site data sent.
-* New: "Copy code" box (Cookies tab) with the `[consentkit_cookie_policy]` shortcode ready to paste into your cookie policy page.
+* New: "Copy code" box (Cookies tab) with the `[biscotto_cookie_policy]` shortcode ready to paste into your cookie policy page.
 
 = 1.3.3 =
 * Fixed: mobile action buttons now share equal width regardless of label length; "Manage preferences" moved to its own centered row below Accept/Reject. Landscape phones: reduced typography/padding so the banner fits in about half the screen instead of overflowing.

@@ -3,16 +3,16 @@
  * REST API: log opzionale dei consensi (prova lato titolare, §13.9).
  * Memorizza dati pseudonimizzati — nessun dato identificativo diretto.
  *
- * @package ConsentKit
+ * @package Biscotto
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class ConsentKit_Api {
+class Biscotto_Api {
 
-	const TABLE = 'consentkit_log';
+	const TABLE = 'biscotto_log';
 
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
@@ -46,7 +46,7 @@ class ConsentKit_Api {
 
 	public function register_routes() {
 		register_rest_route(
-			'consentkit/v1',
+			'biscotto/v1',
 			'/log',
 			array(
 				'methods'             => 'POST',
@@ -68,7 +68,7 @@ class ConsentKit_Api {
 	 * @return WP_REST_Response
 	 */
 	public function log_consent( $request ) {
-		$settings = ConsentKit::get_settings();
+		$settings = Biscotto::get_settings();
 		if ( empty( $settings['log_enabled'] ) ) {
 			return new WP_REST_Response( array( 'logged' => false ), 200 );
 		}
