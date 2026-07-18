@@ -220,8 +220,8 @@ L'ordine è irrilevante perché i tre pattern sono case-sensitive e disgiunti. L
 ```bash
 grep -rlZ -e 'ConsentKit' -e 'CONSENTKIT' -e 'consentkit' . \
   --exclude-dir=.git --exclude-dir=dist --exclude-dir=node_modules --exclude-dir=.claude \
-  --exclude-dir=specs --exclude-dir=plans \
-  --exclude=*.eml --exclude=check-rename.sh --exclude=wporg-review-reply.txt \
+  --exclude-dir=.superpowers --exclude-dir=specs --exclude-dir=plans \
+  --exclude=*.eml --exclude=check-rename.sh --exclude=wporg-review-reply* \
 | xargs -0 sed -i -e 's/ConsentKit/Biscotto/g' -e 's/CONSENTKIT/BISCOTTO/g' -e 's/consentkit/biscotto/g'
 ```
 
@@ -260,7 +260,7 @@ Segnala all'utente, alla fine del task, che deve rinominare a mano il proprio fi
 
 Esegui: `bash tools/check-rename.sh`
 
-Atteso: i tre controlli negativi ora **PASS** (`nessuna classe/identificatore ConsentKit`, `nessuna costante CONSENTKIT`, `nessun identificatore consentkit minuscolo`). Restano **FAIL** i controlli sull'identità pubblica (file principale, POT, text domain) e sulla versione: li chiudono i task 3 e 6.
+Atteso: i tre controlli negativi ora **PASS** (`nessuna classe/identificatore ConsentKit`, `nessuna costante CONSENTKIT`, `nessun identificatore consentkit minuscolo`). Restano **FAIL** i controlli sull'identità pubblica (file principale, POT, text domain, nome plugin) e sulla versione: li chiudono i task 3 e 6.
 
 - [ ] **Step 6: Commit**
 
@@ -886,7 +886,7 @@ E nei due commenti d'intestazione:
 
 Esegui: `bash tools/check-rename.sh`
 
-Atteso: **tutti PASS**, exit 0, con la riga `PASS: versione coerente ovunque (1.5.3)`.
+Atteso: **tutti PASS**, exit 0, con la riga `PASS: versione 1.5.3 coerente ovunque`.
 
 - [ ] **Step 6: Costruire il pacchetto e verificarne la struttura**
 
