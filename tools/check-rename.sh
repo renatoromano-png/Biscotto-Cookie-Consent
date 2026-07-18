@@ -8,6 +8,9 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FAIL=0
 
+# Versione attesa per il rilascio (vedi Global Constraints del piano).
+EXPECTED_VERSION="1.5.3"
+
 # Esclusioni: repository git, artefatti di build, corrispondenza email,
 # lo script stesso (contiene per forza i pattern vietati) e i documenti
 # di progetto che citano la storia del rename.
@@ -16,6 +19,7 @@ GREP_EXCL=(
   --exclude-dir=dist
   --exclude-dir=node_modules
   --exclude-dir=.claude
+  --exclude-dir=.superpowers
   --exclude=*.eml
   --exclude=check-rename.sh
   --exclude=wporg-review-reply*
@@ -67,6 +71,15 @@ else
   FAIL=1
 fi
 
+# Nome del plugin: il separatore e' un trattino lungo (EN DASH U+2013), non un
+# trattino normale. Va su WordPress.org, quindi si verifica il carattere esatto.
+if grep -q "^ \* Plugin Name: *Biscotto – Cookie Consent$" "$MAIN" 2>/dev/null; then
+  echo "PASS: header Plugin Name = Biscotto – Cookie Consent"
+else
+  echo "FAIL: header Plugin Name non e' esattamente 'Biscotto – Cookie Consent' (attenzione al trattino lungo)"
+  FAIL=1
+fi
+
 # Nessuna stringa tradotta col vecchio text domain 'biscotto'.
 OLD_TD="$(grep -rn "'biscotto'" "$WP" --include=*.php 2>/dev/null || true)"
 if [ -n "$OLD_TD" ]; then
@@ -83,10 +96,10 @@ VER_HEADER="$(grep -m1 '^ \* Version:' "$MAIN" 2>/dev/null | tr -dc '0-9.')"
 VER_CONST="$(grep -m1 "define( 'BISCOTTO_VERSION'" "$MAIN" 2>/dev/null | grep -o "'[0-9.]*'" | tail -1 | tr -d "'")"
 VER_README="$(grep -m1 '^Stable tag:' "$WP/readme.txt" 2>/dev/null | tr -dc '0-9.')"
 
-if [ -n "$VER_HEADER" ] && [ "$VER_HEADER" = "$VER_CONST" ] && [ "$VER_HEADER" = "$VER_README" ]; then
-  echo "PASS: versione coerente ovunque ($VER_HEADER)"
+if [ "$VER_HEADER" = "$EXPECTED_VERSION" ] && [ "$VER_CONST" = "$EXPECTED_VERSION" ] && [ "$VER_README" = "$EXPECTED_VERSION" ]; then
+  echo "PASS: versione $EXPECTED_VERSION coerente ovunque"
 else
-  echo "FAIL: versione incoerente — header='$VER_HEADER' costante='$VER_CONST' readme='$VER_README'"
+  echo "FAIL: versione attesa '$EXPECTED_VERSION' — header='$VER_HEADER' costante='$VER_CONST' readme='$VER_README'"
   FAIL=1
 fi
 

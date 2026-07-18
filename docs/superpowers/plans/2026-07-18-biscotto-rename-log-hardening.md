@@ -56,6 +56,9 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FAIL=0
 
+# Versione attesa per il rilascio (vedi Global Constraints del piano).
+EXPECTED_VERSION="1.5.3"
+
 # Esclusioni: repository git, artefatti di build, corrispondenza email,
 # lo script stesso (contiene per forza i pattern vietati) e i documenti
 # di progetto che citano la storia del rename.
@@ -64,6 +67,7 @@ GREP_EXCL=(
   --exclude-dir=dist
   --exclude-dir=node_modules
   --exclude-dir=.claude
+  --exclude-dir=.superpowers
   --exclude=*.eml
   --exclude=check-rename.sh
   --exclude=wporg-review-reply*
@@ -115,6 +119,15 @@ else
   FAIL=1
 fi
 
+# Nome del plugin: il separatore e' un trattino lungo (EN DASH U+2013), non un
+# trattino normale. Va su WordPress.org, quindi si verifica il carattere esatto.
+if grep -q "^ \* Plugin Name: *Biscotto – Cookie Consent$" "$MAIN" 2>/dev/null; then
+  echo "PASS: header Plugin Name = Biscotto – Cookie Consent"
+else
+  echo "FAIL: header Plugin Name non e' esattamente 'Biscotto – Cookie Consent' (attenzione al trattino lungo)"
+  FAIL=1
+fi
+
 # Nessuna stringa tradotta col vecchio text domain 'biscotto'.
 OLD_TD="$(grep -rn "'biscotto'" "$WP" --include=*.php 2>/dev/null || true)"
 if [ -n "$OLD_TD" ]; then
@@ -131,10 +144,10 @@ VER_HEADER="$(grep -m1 '^ \* Version:' "$MAIN" 2>/dev/null | tr -dc '0-9.')"
 VER_CONST="$(grep -m1 "define( 'BISCOTTO_VERSION'" "$MAIN" 2>/dev/null | grep -o "'[0-9.]*'" | tail -1 | tr -d "'")"
 VER_README="$(grep -m1 '^Stable tag:' "$WP/readme.txt" 2>/dev/null | tr -dc '0-9.')"
 
-if [ -n "$VER_HEADER" ] && [ "$VER_HEADER" = "$VER_CONST" ] && [ "$VER_HEADER" = "$VER_README" ]; then
-  echo "PASS: versione coerente ovunque ($VER_HEADER)"
+if [ "$VER_HEADER" = "$EXPECTED_VERSION" ] && [ "$VER_CONST" = "$EXPECTED_VERSION" ] && [ "$VER_README" = "$EXPECTED_VERSION" ]; then
+  echo "PASS: versione $EXPECTED_VERSION coerente ovunque"
 else
-  echo "FAIL: versione incoerente — header='$VER_HEADER' costante='$VER_CONST' readme='$VER_README'"
+  echo "FAIL: versione attesa '$EXPECTED_VERSION' — header='$VER_HEADER' costante='$VER_CONST' readme='$VER_README'"
   FAIL=1
 fi
 
@@ -151,7 +164,7 @@ exit "$FAIL"
 
 Esegui: `bash tools/check-rename.sh`
 
-Atteso: **exit 1**, con almeno questi FAIL — `nessuna classe/identificatore ConsentKit`, `nessuna costante CONSENTKIT`, `nessun identificatore consentkit minuscolo`, `file principale biscotto-cookie-consent.php`, `POT rinominato`, `header Text Domain non è biscotto-cookie-consent`, `text domain 'biscotto' ancora usato`.
+Atteso: **exit 1**, con almeno questi FAIL — `nessuna classe/identificatore ConsentKit`, `nessuna costante CONSENTKIT`, `nessun identificatore consentkit minuscolo`, `file principale biscotto-cookie-consent.php`, `POT rinominato`, `header Text Domain non è biscotto-cookie-consent`, `header Plugin Name non è esattamente 'Biscotto – Cookie Consent'`, `text domain 'biscotto' ancora usato`, `versione attesa '1.5.3'`.
 
 Se lo script passa a questo punto, è rotto: correggilo prima di proseguire.
 
@@ -355,7 +368,7 @@ Atteso: `X-Domain: biscotto-cookie-consent`. Se le righe hanno forma diversa da 
 
 Esegui: `bash tools/check-rename.sh`
 
-Atteso: tutti i controlli **PASS** tranne `versione coerente ovunque`, che resta FAIL fino al Task 6 (header e costante dicono 1.5.0, il readme 1.5.0 — se coincidono già passerà, ma il valore corretto 1.5.3 arriva nel Task 6).
+Atteso: tutti i controlli **PASS** tranne `versione attesa '1.5.3'`, che resta necessariamente FAIL fino al Task 6: header, costante e readme dicono ancora 1.5.0, e il bump alla 1.5.3 richiesta dal rilascio avviene solo lì.
 
 - [ ] **Step 7: Commit**
 
