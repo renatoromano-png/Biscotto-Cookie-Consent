@@ -102,7 +102,7 @@ First public release.
 == Changelog ==
 
 = 1.5.0 =
-* Renamed to "Biscotto – Cookie Consent & Consent Mode" (formerly Biscotto); the text domain is now `biscotto`. Your saved settings are preserved.
+* Plugin renamed to "Biscotto – Cookie Consent & Consent Mode"; the text domain is now `biscotto`. Your saved settings are preserved.
 * Compliance: the Consent Mode v2 default and the Google Tag Manager loader are now added with `wp_add_inline_script()` on enqueued handles instead of being printed inline; the cookie-registry admin behaviour moved to `admin/js/cookies.js`, enqueued with `wp_enqueue_script()`.
 * Docs: added an "External services" section documenting Google Tag Manager, the LinkedIn Insight Tag and the on-demand GitHub update check (what is sent, when, and links to each service's terms and privacy policy).
 
