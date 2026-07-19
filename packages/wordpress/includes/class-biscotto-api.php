@@ -18,10 +18,20 @@ class Biscotto_Api {
 	const RATE_LIMIT_MAX = 10;
 
 	/**
-	 * Tetto globale di scritture per finestra: rete di sicurezza contro chi
-	 * distribuisce le richieste su molti indirizzi diversi.
+	 * Righe massime scrivibili nella finestra, a livello di sito.
+	 *
+	 * Non e' un contatore di richieste: si misura direttamente quante righe
+	 * esistono gia' nella tabella. Contare le righe invece delle richieste
+	 * evita che richieste rifiutate consumino la quota, non dipende da un
+	 * object cache persistente e non e' aggirabile con la concorrenza, perche'
+	 * la quantita' misurata e' proprio quella che l'abuso fa crescere.
+	 *
+	 * Regolabile con il filtro `biscotto_write_ceiling`.
 	 */
-	const RATE_LIMIT_GLOBAL_MAX = 500;
+	const WRITE_CEILING_MAX = 2000;
+
+	/** Finestra del tetto sulle scritture, in secondi. */
+	const WRITE_CEILING_WINDOW = HOUR_IN_SECONDS;
 
 	/**
 	 * Finestra di deduplica, in secondi.
@@ -86,8 +96,8 @@ class Biscotto_Api {
 				// non esiste un utente da autorizzare e permission_callback e'
 				// __return_true. Il nonce nel body copre il CSRF, non l'abuso: il
 				// limite reale alla scrittura su database e' dato dal rate limit per
-				// indirizzo IP, dal tetto globale, dalla deduplica a 24 ore e dalla
-				// retention periodica.
+				// indirizzo IP, dal tetto sulle scritture, dalla deduplica a 24 ore e
+				// dalla retention periodica.
 				'permission_callback' => '__return_true',
 			)
 		);
@@ -96,9 +106,12 @@ class Biscotto_Api {
 	/**
 	 * Salva un record di consenso pseudonimizzato.
 	 *
-	 * Ordine dei controlli: log attivo, nonce (CSRF), rate limit, allowlist
-	 * delle azioni, deduplica, insert. Il rate limit precede la deduplica
-	 * perche' altrimenti la query di deduplica sarebbe eseguibile senza limite.
+	 * Ordine dei controlli: log attivo, nonce (CSRF), derivazione dello
+	 * pseudo_id, rate limit per IP, allowlist delle azioni, deduplica, tetto
+	 * sulle scritture, insert. Il rate limit per IP precede la deduplica
+	 * perche' altrimenti la query di deduplica sarebbe eseguibile senza
+	 * limite. Il tetto sulle scritture e' l'ultimo controllo perche' misura
+	 * righe, non richieste: va calcolato subito prima di scrivere davvero.
 	 *
 	 * @param WP_REST_Request $request Richiesta.
 	 * @return WP_REST_Response
@@ -137,12 +150,6 @@ class Biscotto_Api {
 			return new WP_REST_Response( array( 'logged' => false, 'error' => 'rate_limited' ), 429 );
 		}
 
-		// Tetto globale: se il limite per IP viene aggirato distribuendo le
-		// richieste su molti indirizzi, questo resta come ultima difesa.
-		if ( ! $this->within_limit( 'biscotto_rl_global', self::RATE_LIMIT_GLOBAL_MAX, HOUR_IN_SECONDS ) ) {
-			return new WP_REST_Response( array( 'logged' => false, 'error' => 'rate_limited' ), 429 );
-		}
-
 		$action     = isset( $params['action'] ) ? sanitize_text_field( $params['action'] ) : '';
 		$policy     = isset( $params['policyVersion'] ) ? sanitize_text_field( $params['policyVersion'] ) : '';
 		$categories = isset( $params['categories'] ) && is_array( $params['categories'] ) ? $params['categories'] : array();
@@ -176,6 +183,31 @@ class Biscotto_Api {
 			return new WP_REST_Response( array( 'logged' => false, 'reason' => 'duplicate' ), 200 );
 		}
 
+		// Tetto sulle scritture: si contano le righe gia' presenti nella
+		// finestra, non le richieste ricevute. Sta qui, dopo la deduplica,
+		// perche' misura cio' che stiamo per aggiungere davvero.
+		$ceiling = (int) apply_filters( 'biscotto_write_ceiling', self::WRITE_CEILING_MAX );
+		$written = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$table} WHERE created_at > %s",
+				gmdate( 'Y-m-d H:i:s', time() - self::WRITE_CEILING_WINDOW )
+			)
+		);
+
+		if ( '' !== $wpdb->last_error ) {
+			return new WP_REST_Response( array( 'logged' => false, 'error' => 'db_error' ), 500 );
+		}
+
+		if ( $written >= $ceiling ) {
+			// Codice distinto dal 429 per IP: qui il log si e' fermato per
+			// tutto il sito, non per un singolo visitatore. Il flag permette
+			// al pannello di segnalarlo, altrimenti la mancanza di righe
+			// resterebbe l'unico sintomo.
+			set_transient( 'biscotto_write_ceiling_hit', time(), WEEK_IN_SECONDS );
+
+			return new WP_REST_Response( array( 'logged' => false, 'error' => 'write_ceiling' ), 429 );
+		}
+
 		$inserted = $wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$table,
 			array(
@@ -198,12 +230,15 @@ class Biscotto_Api {
 	/**
 	 * Incrementa un contatore a finestra e dice se si e' entro la soglia.
 	 *
-	 * Concorrenza: leggere-confrontare-scrivere non e' atomico, quindi
-	 * richieste simultanee possono leggere lo stesso valore e far avanzare il
-	 * contatore di uno invece che di N, superando la soglia. Con un object
-	 * cache persistente si usa wp_cache_incr, che e' atomico; senza, il
-	 * transient e' l'unica opzione offerta da WordPress e la soglia va intesa
-	 * come approssimata per eccesso.
+	 * E' la prima linea, non l'ultima: serve a fermare a basso costo il
+	 * martellamento da un singolo indirizzo. Il limite vero alle scritture e'
+	 * il tetto sulle righe, che non dipende da questo contatore.
+	 *
+	 * Concorrenza: senza un object cache persistente WordPress non offre un
+	 * contatore atomico, quindi richieste simultanee possono far avanzare il
+	 * valore di uno invece che di N. Il limite va quindi inteso come
+	 * approssimato per eccesso, ed e' accettabile proprio perche' non e'
+	 * l'unica difesa.
 	 *
 	 * @param string $key    Chiave del contatore.
 	 * @param int    $max    Soglia oltre la quale si rifiuta.
@@ -212,11 +247,19 @@ class Biscotto_Api {
 	 */
 	private function within_limit( $key, $max, $window ) {
 		if ( wp_using_ext_object_cache() ) {
+			// wp_cache_add imposta la scadenza e non fa nulla se la chiave
+			// esiste gia'. Serve perche' wp_cache_incr da solo, sui drop-in
+			// Redis, crea la chiave SENZA scadenza: il contatore non si
+			// azzererebbe mai e il log resterebbe bloccato per sempre.
+			wp_cache_add( $key, 0, 'biscotto', $window );
 			$hits = wp_cache_incr( $key, 1, 'biscotto' );
+
+			// Se l'object cache non collabora si lascia passare: il tetto
+			// sulle righe resta comunque a fare da limite.
 			if ( false === $hits ) {
-				wp_cache_set( $key, 1, 'biscotto', $window );
-				$hits = 1;
+				return true;
 			}
+
 			return $hits <= $max;
 		}
 

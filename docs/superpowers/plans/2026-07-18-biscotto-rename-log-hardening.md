@@ -420,10 +420,20 @@ In `packages/wordpress/includes/class-biscotto-api.php`, subito sotto `const TAB
 	const RATE_LIMIT_MAX = 10;
 
 	/**
-	 * Tetto globale di scritture per finestra: rete di sicurezza contro chi
-	 * distribuisce le richieste su molti indirizzi diversi.
+	 * Righe massime scrivibili nella finestra, a livello di sito.
+	 *
+	 * Non e' un contatore di richieste: si misura direttamente quante righe
+	 * esistono gia' nella tabella. Contare le righe invece delle richieste
+	 * evita che richieste rifiutate consumino la quota, non dipende da un
+	 * object cache persistente e non e' aggirabile con la concorrenza, perche'
+	 * la quantita' misurata e' proprio quella che l'abuso fa crescere.
+	 *
+	 * Regolabile con il filtro `biscotto_write_ceiling`.
 	 */
-	const RATE_LIMIT_GLOBAL_MAX = 500;
+	const WRITE_CEILING_MAX = 2000;
+
+	/** Finestra del tetto sulle scritture, in secondi. */
+	const WRITE_CEILING_WINDOW = HOUR_IN_SECONDS;
 
 	/**
 	 * Finestra di deduplica, in secondi.
@@ -521,12 +531,6 @@ Sostituisci integralmente il metodo `log_consent()` con:
 			return new WP_REST_Response( array( 'logged' => false, 'error' => 'rate_limited' ), 429 );
 		}
 
-		// Tetto globale: se il limite per IP viene aggirato distribuendo le
-		// richieste su molti indirizzi, questo resta come ultima difesa.
-		if ( ! $this->within_limit( 'biscotto_rl_global', self::RATE_LIMIT_GLOBAL_MAX, HOUR_IN_SECONDS ) ) {
-			return new WP_REST_Response( array( 'logged' => false, 'error' => 'rate_limited' ), 429 );
-		}
-
 		$action     = isset( $params['action'] ) ? sanitize_text_field( $params['action'] ) : '';
 		$policy     = isset( $params['policyVersion'] ) ? sanitize_text_field( $params['policyVersion'] ) : '';
 		$categories = isset( $params['categories'] ) && is_array( $params['categories'] ) ? $params['categories'] : array();
@@ -558,6 +562,31 @@ Sostituisci integralmente il metodo `log_consent()` con:
 
 		if ( $exists ) {
 			return new WP_REST_Response( array( 'logged' => false, 'reason' => 'duplicate' ), 200 );
+		}
+
+		// Tetto sulle scritture: si contano le righe gia' presenti nella
+		// finestra, non le richieste ricevute. Sta qui, dopo la deduplica,
+		// perche' misura cio' che stiamo per aggiungere davvero.
+		$ceiling = (int) apply_filters( 'biscotto_write_ceiling', self::WRITE_CEILING_MAX );
+		$written = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$table} WHERE created_at > %s",
+				gmdate( 'Y-m-d H:i:s', time() - self::WRITE_CEILING_WINDOW )
+			)
+		);
+
+		if ( '' !== $wpdb->last_error ) {
+			return new WP_REST_Response( array( 'logged' => false, 'error' => 'db_error' ), 500 );
+		}
+
+		if ( $written >= $ceiling ) {
+			// Codice distinto dal 429 per IP: qui il log si e' fermato per
+			// tutto il sito, non per un singolo visitatore. Il flag permette
+			// al pannello di segnalarlo, altrimenti la mancanza di righe
+			// resterebbe l'unico sintomo.
+			set_transient( 'biscotto_write_ceiling_hit', time(), WEEK_IN_SECONDS );
+
+			return new WP_REST_Response( array( 'logged' => false, 'error' => 'write_ceiling' ), 429 );
 		}
 
 		$inserted = $wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
@@ -649,7 +678,7 @@ Su un'installazione WordPress pulita con `WP_DEBUG` a `true`, con il plugin atti
        -d '{"nonce":"NONCE_DALLA_PAGINA","action":"granted_all","policyVersion":"2026-07","categories":[]}'
    done; echo
    ```
-   Atteso: i primi 10 rispondono `200` (duplicati) o `201`, dall'undicesimo in poi `429`. Poiche' la chiave del rate limit e' l'IP e non il `pseudo_id`, il risultato non cambia rispetto a una richiesta con lo stesso User-Agent: prima della correzione, invece, ogni User-Agent diverso avrebbe fatto ripartire il contatore da zero e tutte e 12 le richieste avrebbero risposto `200`/`201`.
+   Atteso: i primi 10 rispondono `201`, dall'undicesimo in poi `429`. Variando lo User-Agent ogni `pseudo_id` è diverso, quindi la deduplica non può mai scattare e non si vedranno `200`: ogni richiesta entro soglia scrive davvero una riga. È proprio questo a rendere il test significativo — prima della correzione ogni User-Agent nuovo azzerava il contatore e tutte e 12 le richieste avrebbero risposto `201`, inserendo 12 righe. Ora la chiave del rate limit è l'IP, che non cambia, quindi il limite scatta.
 
 Il `NONCE_DALLA_PAGINA` si legge dal sorgente della pagina pubblica, in `biscottoConfig.logNonce`.
 

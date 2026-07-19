@@ -124,13 +124,16 @@ Ordine obbligatorio in `log_consent()`:
 
 1. `log_enabled` attivo
 2. nonce valido (protezione CSRF)
-3. rate limit per IP (più tetto globale)
+3. rate limit per IP
 4. `action` compresa nell'allowlist
 5. deduplica
-6. insert
+6. tetto sulle scritture
+7. insert
 
-Il rate limit precede la deduplica: invertendoli si potrebbe far eseguire la
-query di deduplica senza alcun limite.
+Il rate limit per IP precede la deduplica: invertendoli si potrebbe far
+eseguire la query di deduplica senza alcun limite. Il tetto sulle scritture
+sta subito prima dell'insert, dopo la deduplica, perché misura le righe che
+stanno per essere aggiunte davvero, non le richieste ricevute.
 
 ### Rate limit
 
@@ -143,16 +146,67 @@ chiave del limite. Contatore con scadenza 1 ora, soglia 10 scritture per IP.
 Al superamento la risposta è `429` con
 `{ "logged": false, "error": "rate_limited" }`.
 
-A questo si aggiunge un tetto globale di 500 scritture l'ora, indipendente
-dall'IP: rete di sicurezza contro chi distribuisce le richieste su molti
-indirizzi diversi (es. una botnet), che altrimenti otterrebbe una quota
-propria per ciascun indirizzo.
+Questo contatore è la prima linea di difesa, non l'ultima: serve a fermare a
+basso costo il martellamento da un singolo indirizzo, non a bloccare l'abuso
+distribuito. Il limite reale è dato dal tetto sulle scritture (sotto), che non
+dipende da questo contatore.
 
 Il `pseudo_id` esiste già: hash SHA-256 di IP + user agent + salt giornaliero,
 non reversibile e privo di dati identificativi diretti. Resta il valore
 memorizzato nella tabella e la chiave usata per la deduplica — i due usi
 (rate limit e deduplica) sono distinti e non devono condividere la stessa
 chiave.
+
+### Tetto sulle scritture
+
+Il precedente tetto globale era un contatore su transient/object cache,
+incrementato a ogni richiesta prima ancora dell'allowlist e della deduplica.
+Si è rivelato inadeguato su tre fronti:
+
+- **raceable senza object cache persistente**: `wp_cache_incr` atomico è
+  disponibile solo con un object cache esterno, assente sulla maggior parte
+  dell'hosting condiviso. Senza di esso il percorso ricade su
+  leggi-confronta-scrivi via transient, non atomico: sotto concorrenza il
+  contatore avanza di 1 per round invece che di N, e un tetto nominale di 500
+  può ammettere ordini di grandezza in più. Un chiamante con un /64 IPv6 ha di
+  fatto indirizzi sorgente illimitati, quindi il limite per IP non limita
+  nulla in aggregato e quel tetto era l'unica difesa reale.
+- **creabile senza scadenza sui drop-in Redis**: `wp_cache_incr` che ritorna
+  `false` per una chiave assente è semantica Memcached; i drop-in Redis
+  implementano `INCRBY`, che crea la chiave e ritorna 1, quindi il ramo che
+  imposta la scadenza non veniva mai eseguito. Il contatore non si azzerava
+  più e ogni invio di consenso restituiva 429 per sempre.
+- **contava le richieste, non le scritture**: il controllo stava prima
+  dell'allowlist e della deduplica, quindi 500 richieste con un `action` non
+  valido — tutte rifiutate con 400, nessuna riga scritta — esaurivano la
+  quota del sito.
+
+Il tetto ora conta le righe già presenti nella tabella nella finestra, con un
+`COUNT(*)` eseguito subito prima dell'insert, dopo la deduplica. Contare le
+righe invece delle richieste risolve tutti e tre i problemi insieme: le
+richieste rifiutate non consumano quota, non serve alcun object cache
+persistente, e non è aggirabile con la concorrenza perché la quantità
+misurata è proprio quella che l'abuso fa crescere — anche ammettendo un
+eccesso temporaneo di scritture concorrenti sopra soglia, la query successiva
+lo vede subito e blocca il resto.
+
+Default 2000 righe l'ora, regolabile con il filtro `biscotto_write_ceiling`.
+Al superamento la risposta è `429` con
+`{ "logged": false, "error": "write_ceiling" }` — codice distinto da
+`rate_limited` perché qui il log si è fermato per l'intero sito, non per un
+singolo visitatore. Un transient (`biscotto_write_ceiling_hit`) registra
+l'evento e un avviso compare in bacheca per l'amministratore: senza, l'unico
+sintomo visibile sarebbe l'assenza di righe nel registro, che su un log di
+consensi è esattamente ciò che non si vuole scoprire tardi.
+
+**Limite residuo accettato**: il contatore per IP resta approssimato per
+eccesso in assenza di un object cache persistente, per lo stesso motivo di
+leggi-confronta-scrivi non atomico descritto sopra; ed è possibile che 10
+richieste/ora per IP scartino consenso legittimo dietro NAT a grado
+industriale, dove molti visitatori distinti condividono lo stesso indirizzo.
+Entrambi i limiti sono accettati perché il rate limit per IP non è più
+l'unica difesa: il tetto sulle scritture è il vincolo reale e non eredita
+nessuno dei due problemi.
 
 ### Deduplica
 

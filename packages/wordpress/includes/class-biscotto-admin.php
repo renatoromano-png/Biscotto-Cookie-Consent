@@ -18,6 +18,7 @@ class Biscotto_Admin {
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin' ) );
 		add_filter( 'plugin_action_links_' . plugin_basename( BISCOTTO_FILE ), array( $this, 'settings_link' ) );
+		add_action( 'admin_notices', array( $this, 'write_ceiling_notice' ) );
 	}
 
 	public function register_menu() {
@@ -34,6 +35,29 @@ class Biscotto_Admin {
 		$url = admin_url( 'options-general.php?page=' . self::PAGE_SLUG );
 		array_unshift( $links, '<a href="' . esc_url( $url ) . '">' . esc_html__( 'Impostazioni', 'biscotto-cookie-consent' ) . '</a>' );
 		return $links;
+	}
+
+	/**
+	 * Avvisa se il tetto sulle scritture del log consensi e' scattato.
+	 *
+	 * Senza questo avviso il sintomo sarebbe soltanto l'assenza di righe, che
+	 * su un registro di consensi e' esattamente cio' che non si vuole scoprire
+	 * tardi.
+	 */
+	public function write_ceiling_notice() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$hit = get_transient( 'biscotto_write_ceiling_hit' );
+		if ( ! $hit ) {
+			return;
+		}
+
+		printf(
+			'<div class="notice notice-warning"><p>%s</p></div>',
+			esc_html__( 'Biscotto: il tetto orario di scritture del log dei consensi e\' stato raggiunto e alcuni consensi non sono stati registrati. Se il traffico del sito lo giustifica, alza il limite con il filtro biscotto_write_ceiling.', 'biscotto-cookie-consent' )
+		);
 	}
 
 	public function enqueue_admin( $hook ) {
