@@ -611,12 +611,15 @@ Sostituisci integralmente il metodo `log_consent()` con:
 	/**
 	 * Incrementa un contatore a finestra e dice se si e' entro la soglia.
 	 *
-	 * Concorrenza: leggere-confrontare-scrivere non e' atomico, quindi
-	 * richieste simultanee possono leggere lo stesso valore e far avanzare il
-	 * contatore di uno invece che di N, superando la soglia. Con un object
-	 * cache persistente si usa wp_cache_incr, che e' atomico; senza, il
-	 * transient e' l'unica opzione offerta da WordPress e la soglia va intesa
-	 * come approssimata per eccesso.
+	 * E' la prima linea, non l'ultima: serve a fermare a basso costo il
+	 * martellamento da un singolo indirizzo. Il limite vero alle scritture e'
+	 * il tetto sulle righe, che non dipende da questo contatore.
+	 *
+	 * Concorrenza: senza un object cache persistente WordPress non offre un
+	 * contatore atomico, quindi richieste simultanee possono far avanzare il
+	 * valore di uno invece che di N. Il limite va quindi inteso come
+	 * approssimato per eccesso, ed e' accettabile proprio perche' non e'
+	 * l'unica difesa.
 	 *
 	 * @param string $key    Chiave del contatore.
 	 * @param int    $max    Soglia oltre la quale si rifiuta.
@@ -625,11 +628,19 @@ Sostituisci integralmente il metodo `log_consent()` con:
 	 */
 	private function within_limit( $key, $max, $window ) {
 		if ( wp_using_ext_object_cache() ) {
+			// wp_cache_add imposta la scadenza e non fa nulla se la chiave
+			// esiste gia'. Serve perche' wp_cache_incr da solo, sui drop-in
+			// Redis, crea la chiave SENZA scadenza: il contatore non si
+			// azzererebbe mai e il log resterebbe bloccato per sempre.
+			wp_cache_add( $key, 0, 'biscotto', $window );
 			$hits = wp_cache_incr( $key, 1, 'biscotto' );
+
+			// Se l'object cache non collabora si lascia passare: il tetto
+			// sulle righe resta comunque a fare da limite.
 			if ( false === $hits ) {
-				wp_cache_set( $key, 1, 'biscotto', $window );
-				$hits = 1;
+				return true;
 			}
+
 			return $hits <= $max;
 		}
 
@@ -685,7 +696,7 @@ Il `NONCE_DALLA_PAGINA` si legge dal sorgente della pagina pubblica, in `biscott
 - [ ] **Step 5: Commit**
 
 ```bash
-git add packages/wordpress/includes/class-biscotto-api.php
+git add packages/wordpress/includes/class-biscotto-api.php packages/wordpress/includes/class-biscotto-admin.php
 git commit -m "fix(wordpress): limiti reali di scrittura sull'endpoint REST /log
 
 Risponde al rilievo WordPress.org: il nonce wp_rest e' ottenibile da qualunque
@@ -734,21 +745,13 @@ Nel costruttore, aggancia la potatura al cron:
 	}
 ```
 
-In `maybe_create_log_table()`, aggiungi l'indice su `created_at`, necessario sia alla deduplica sia alla potatura. Lo schema completo diventa:
+**L'indice su `created_at` è già presente**: è stato spostato nel Task 4, perché senza di esso la query del tetto sulle scritture faceva una scansione completa della tabella a ogni richiesta. Verifica che ci sia e non duplicarlo:
 
-```php
-		$sql = "CREATE TABLE {$table} (
-			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-			created_at DATETIME NOT NULL,
-			pseudo_id CHAR(64) NOT NULL,
-			policy_version VARCHAR(32) NOT NULL,
-			action VARCHAR(20) NOT NULL,
-			categories TEXT NOT NULL,
-			PRIMARY KEY (id),
-			KEY pseudo_id (pseudo_id),
-			KEY created_at (created_at)
-		) {$charset};";
+```bash
+grep -n "KEY created_at" packages/wordpress/includes/class-biscotto-api.php
 ```
+
+Atteso: una sola occorrenza, dentro `maybe_create_log_table()`. Se manca, aggiungila; se compare due volte, rimuovi il duplicato.
 
 - [ ] **Step 2: Implementare la potatura**
 
@@ -894,16 +897,17 @@ Con il plugin **riattivato** (l'evento cron si schedula in attivazione, quindi d
 - [ ] **Step 8: Commit**
 
 ```bash
-git add -A
+git add packages/wordpress/includes/class-biscotto-api.php packages/wordpress/includes/class-biscotto-consent.php packages/wordpress/includes/class-biscotto-admin.php packages/wordpress/admin/views/settings-integrations.php packages/wordpress/biscotto-cookie-consent.php
 git commit -m "feat(wordpress): retention configurabile per il log dei consensi
 
 Evento cron giornaliero biscotto_prune_log che elimina i record oltre la
 finestra di conservazione (default 12 mesi, impostabile da 1 a 120 nel
 pannello Integrazioni). Schedulato in attivazione, rimosso in disattivazione.
 
-Aggiunge KEY created_at alla tabella di log: serve alla potatura e alla query
-di deduplica. Oltre a limitare la crescita della tabella, la retention
-risponde al principio di minimizzazione dei dati.
+L'indice KEY created_at, che serve anche alla potatura, e' gia' stato
+aggiunto nel Task 4 per la query del tetto sulle scritture. Oltre a limitare
+la crescita della tabella, la retention risponde al principio di
+minimizzazione dei dati.
 
 Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 ```

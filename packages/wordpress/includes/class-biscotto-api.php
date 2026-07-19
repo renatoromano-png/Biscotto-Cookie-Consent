@@ -70,7 +70,8 @@ class Biscotto_Api {
 			action VARCHAR(20) NOT NULL,
 			categories TEXT NOT NULL,
 			PRIMARY KEY (id),
-			KEY pseudo_id (pseudo_id)
+			KEY pseudo_id (pseudo_id),
+			KEY created_at (created_at)
 		) {$charset};";
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
@@ -186,7 +187,9 @@ class Biscotto_Api {
 		// Tetto sulle scritture: si contano le righe gia' presenti nella
 		// finestra, non le richieste ricevute. Sta qui, dopo la deduplica,
 		// perche' misura cio' che stiamo per aggiungere davvero.
-		$ceiling = (int) apply_filters( 'biscotto_write_ceiling', self::WRITE_CEILING_MAX );
+		// max(1) perche' un filtro che restituisse 0 o un negativo spegnerebbe
+		// il log per sempre, con l'avviso in bacheca come unico sintomo.
+		$ceiling = max( 1, (int) apply_filters( 'biscotto_write_ceiling', self::WRITE_CEILING_MAX ) );
 		$written = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$wpdb->prepare(
 				"SELECT COUNT(*) FROM {$table} WHERE created_at > %s",
@@ -203,7 +206,14 @@ class Biscotto_Api {
 			// tutto il sito, non per un singolo visitatore. Il flag permette
 			// al pannello di segnalarlo, altrimenti la mancanza di righe
 			// resterebbe l'unico sintomo.
-			set_transient( 'biscotto_write_ceiling_hit', time(), WEEK_IN_SECONDS );
+			//
+			// Si scrive solo se non c'e' gia': senza questa guardia, ogni
+			// richiesta rifiutata produrrebbe una UPDATE su wp_options, cioe'
+			// di nuovo una scrittura anonima per richiesta — esattamente
+			// l'obiezione che questo codice deve chiudere.
+			if ( false === get_transient( 'biscotto_write_ceiling_hit' ) ) {
+				set_transient( 'biscotto_write_ceiling_hit', time(), WEEK_IN_SECONDS );
+			}
 
 			return new WP_REST_Response( array( 'logged' => false, 'error' => 'write_ceiling' ), 429 );
 		}
@@ -222,6 +232,13 @@ class Biscotto_Api {
 
 		if ( false === $inserted ) {
 			return new WP_REST_Response( array( 'logged' => false, 'error' => 'db_error' ), 500 );
+		}
+
+		// Il tetto si sblocca da solo quando le righe escono dalla finestra:
+		// se siamo riusciti a scrivere, la condizione e' rientrata e l'avviso
+		// in bacheca non deve restare li' a suggerire di alzare il limite.
+		if ( false !== get_transient( 'biscotto_write_ceiling_hit' ) ) {
+			delete_transient( 'biscotto_write_ceiling_hit' );
 		}
 
 		return new WP_REST_Response( array( 'logged' => true ), 201 );
