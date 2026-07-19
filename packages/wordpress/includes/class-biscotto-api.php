@@ -14,10 +14,26 @@ class Biscotto_Api {
 
 	const TABLE = 'biscotto_log';
 
-	/** Scritture massime consentite a uno stesso pseudo_id in un'ora. */
+	/** Scritture massime consentite a uno stesso indirizzo IP in un'ora. */
 	const RATE_LIMIT_MAX = 10;
 
-	/** Finestra di deduplica, in secondi. */
+	/**
+	 * Tetto globale di scritture per finestra: rete di sicurezza contro chi
+	 * distribuisce le richieste su molti indirizzi diversi.
+	 */
+	const RATE_LIMIT_GLOBAL_MAX = 500;
+
+	/**
+	 * Finestra di deduplica, in secondi.
+	 *
+	 * Attenzione: la finestra effettiva e' piu' corta di cosi'. Il pseudo_id
+	 * include un salt che ruota a mezzanotte UTC, quindi due richieste a
+	 * cavallo della mezzanotte producono pseudo_id diversi e non vengono mai
+	 * riconosciute come duplicate. La finestra reale va da 0 a 24 ore a
+	 * seconda dell'ora in cui arriva la prima richiesta. E' accettabile: la
+	 * deduplica riduce il volume, non e' un controllo di sicurezza — quello e'
+	 * il rate limit.
+	 */
 	const DEDUPE_WINDOW = DAY_IN_SECONDS;
 
 	public function __construct() {
@@ -70,7 +86,8 @@ class Biscotto_Api {
 				// non esiste un utente da autorizzare e permission_callback e'
 				// __return_true. Il nonce nel body copre il CSRF, non l'abuso: il
 				// limite reale alla scrittura su database e' dato dal rate limit per
-				// pseudo_id, dalla deduplica a 24 ore e dalla retention periodica.
+				// indirizzo IP, dal tetto globale, dalla deduplica a 24 ore e dalla
+				// retention periodica.
 				'permission_callback' => '__return_true',
 			)
 		);
@@ -109,13 +126,22 @@ class Biscotto_Api {
 		$salt   = wp_salt( 'auth' ) . gmdate( 'Y-m-d' );
 		$pseudo = hash( 'sha256', $ip . '|' . $ua . '|' . $salt );
 
-		// Rate limit: massimo RATE_LIMIT_MAX scritture all'ora per pseudo_id.
-		$rl_key = 'biscotto_rl_' . $pseudo;
-		$hits   = (int) get_transient( $rl_key );
-		if ( $hits >= self::RATE_LIMIT_MAX ) {
+		// Rate limit per indirizzo IP. La chiave NON deve contenere lo user
+		// agent ne' altri header: sono scelti dal chiamante, che potrebbe
+		// variarli a ogni richiesta per ripartire sempre da un contatore
+		// vuoto. Falsificare REMOTE_ADDR richiede invece di completare un
+		// handshake TCP. L'IP viene comunque passato per hash col salt
+		// giornaliero: non serve conservarlo in chiaro.
+		$rl_key = 'biscotto_rl_' . hash( 'sha256', $ip . '|' . $salt );
+		if ( ! $this->within_limit( $rl_key, self::RATE_LIMIT_MAX, HOUR_IN_SECONDS ) ) {
 			return new WP_REST_Response( array( 'logged' => false, 'error' => 'rate_limited' ), 429 );
 		}
-		set_transient( $rl_key, $hits + 1, HOUR_IN_SECONDS );
+
+		// Tetto globale: se il limite per IP viene aggirato distribuendo le
+		// richieste su molti indirizzi, questo resta come ultima difesa.
+		if ( ! $this->within_limit( 'biscotto_rl_global', self::RATE_LIMIT_GLOBAL_MAX, HOUR_IN_SECONDS ) ) {
+			return new WP_REST_Response( array( 'logged' => false, 'error' => 'rate_limited' ), 429 );
+		}
 
 		$action     = isset( $params['action'] ) ? sanitize_text_field( $params['action'] ) : '';
 		$policy     = isset( $params['policyVersion'] ) ? sanitize_text_field( $params['policyVersion'] ) : '';
@@ -141,11 +167,16 @@ class Biscotto_Api {
 				$cutoff
 			)
 		);
+
+		if ( '' !== $wpdb->last_error ) {
+			return new WP_REST_Response( array( 'logged' => false, 'error' => 'db_error' ), 500 );
+		}
+
 		if ( $exists ) {
 			return new WP_REST_Response( array( 'logged' => false, 'reason' => 'duplicate' ), 200 );
 		}
 
-		$wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$inserted = $wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$table,
 			array(
 				'created_at'     => current_time( 'mysql', true ),
@@ -157,6 +188,44 @@ class Biscotto_Api {
 			array( '%s', '%s', '%s', '%s', '%s' )
 		);
 
+		if ( false === $inserted ) {
+			return new WP_REST_Response( array( 'logged' => false, 'error' => 'db_error' ), 500 );
+		}
+
 		return new WP_REST_Response( array( 'logged' => true ), 201 );
+	}
+
+	/**
+	 * Incrementa un contatore a finestra e dice se si e' entro la soglia.
+	 *
+	 * Concorrenza: leggere-confrontare-scrivere non e' atomico, quindi
+	 * richieste simultanee possono leggere lo stesso valore e far avanzare il
+	 * contatore di uno invece che di N, superando la soglia. Con un object
+	 * cache persistente si usa wp_cache_incr, che e' atomico; senza, il
+	 * transient e' l'unica opzione offerta da WordPress e la soglia va intesa
+	 * come approssimata per eccesso.
+	 *
+	 * @param string $key    Chiave del contatore.
+	 * @param int    $max    Soglia oltre la quale si rifiuta.
+	 * @param int    $window Durata della finestra, in secondi.
+	 * @return bool True se la richiesta rientra nella soglia.
+	 */
+	private function within_limit( $key, $max, $window ) {
+		if ( wp_using_ext_object_cache() ) {
+			$hits = wp_cache_incr( $key, 1, 'biscotto' );
+			if ( false === $hits ) {
+				wp_cache_set( $key, 1, 'biscotto', $window );
+				$hits = 1;
+			}
+			return $hits <= $max;
+		}
+
+		$hits = (int) get_transient( $key );
+		if ( $hits >= $max ) {
+			return false;
+		}
+		set_transient( $key, $hits + 1, $window );
+
+		return true;
 	}
 }

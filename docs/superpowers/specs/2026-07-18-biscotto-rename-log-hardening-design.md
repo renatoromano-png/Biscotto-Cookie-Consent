@@ -124,7 +124,7 @@ Ordine obbligatorio in `log_consent()`:
 
 1. `log_enabled` attivo
 2. nonce valido (protezione CSRF)
-3. rate limit per `pseudo_id`
+3. rate limit per IP (più tetto globale)
 4. `action` compresa nell'allowlist
 5. deduplica
 6. insert
@@ -134,12 +134,25 @@ query di deduplica senza alcun limite.
 
 ### Rate limit
 
-Transient `biscotto_rl_{pseudo_id}` come contatore, scadenza 1 ora, soglia 10
-scritture. Al superamento la risposta è `429` con
+Il contatore è chiavato su un hash di IP + salt giornaliero, non sul
+`pseudo_id`: il `pseudo_id` include lo user agent, un header scelto dal
+chiamante, che potrebbe variarlo a ogni richiesta per far ripartire il
+contatore da zero ogni volta. `REMOTE_ADDR` non è falsificabile senza
+completare un handshake TCP, quindi è l'unico dei due valori adatto a fare da
+chiave del limite. Contatore con scadenza 1 ora, soglia 10 scritture per IP.
+Al superamento la risposta è `429` con
 `{ "logged": false, "error": "rate_limited" }`.
 
+A questo si aggiunge un tetto globale di 500 scritture l'ora, indipendente
+dall'IP: rete di sicurezza contro chi distribuisce le richieste su molti
+indirizzi diversi (es. una botnet), che altrimenti otterrebbe una quota
+propria per ciascun indirizzo.
+
 Il `pseudo_id` esiste già: hash SHA-256 di IP + user agent + salt giornaliero,
-non reversibile e privo di dati identificativi diretti.
+non reversibile e privo di dati identificativi diretti. Resta il valore
+memorizzato nella tabella e la chiave usata per la deduplica — i due usi
+(rate limit e deduplica) sono distinti e non devono condividere la stessa
+chiave.
 
 ### Deduplica
 
@@ -147,6 +160,12 @@ Se esiste già un record con stesso `pseudo_id`, `policy_version` e `action`
 creato nelle ultime 24 ore, la risposta è `200` con
 `{ "logged": false, "reason": "duplicate" }` e nessun insert. Questo elimina la
 maggior parte del volume, sia legittimo (ricariche di pagina) sia abusivo.
+
+La finestra effettiva è più corta delle 24 ore nominali: il salt che entra nel
+`pseudo_id` ruota a mezzanotte UTC, quindi due richieste a cavallo della
+mezzanotte producono `pseudo_id` diversi e non vengono mai riconosciute come
+duplicate. È accettabile perché la deduplica riduce il volume, non è un
+controllo di sicurezza — quel ruolo è del rate limit.
 
 ### Retention
 

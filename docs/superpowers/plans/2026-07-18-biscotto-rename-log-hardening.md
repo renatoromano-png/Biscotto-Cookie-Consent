@@ -20,13 +20,23 @@
 
 ## Nota sull'ambiente
 
-**PHP non è installato su questa macchina** (`php -v` → comando non trovato). Conseguenze operative:
+**Aggiornato il 19 luglio 2026: Laragon è stato installato durante l'esecuzione del piano.** PHP 8.3.30, MySQL 8.4.3 e Composer sono disponibili, ma **non sono nel PATH** di Git Bash. Usa il percorso esplicito:
 
-- `php -l` (lint) e lo script `tests/test-cookie-database.php` **non sono eseguibili in locale**.
-- La verifica automatica in-repo si limita a `tools/check-rename.sh` (bash + grep, disponibili).
-- La verifica funzionale va fatta su un'installazione WordPress pulita con `WP_DEBUG` a `true`: i passi manuali sono specificati nei task 4, 5 e 7.
+```bash
+PHP=/c/laragon/bin/php/php-8.3.30-Win32-vs16-x64/php.exe
+"$PHP" -l percorso/del/file.php
+```
 
-Se preferisci verifica automatica anche in locale, installa PHP (`winget install PHP.PHP`) prima del Task 2 e riabilita i passi di lint marcati come opzionali.
+Conseguenze operative:
+
+- `php -l` **è ora eseguibile**: i passi di lint marcati come opzionali nei task 4 e 5 vanno eseguiti, non saltati.
+- `tests/test-cookie-database.php` **è ora eseguibile**: `"$PHP" tests/test-cookie-database.php`.
+- `tools/check-rename.sh` (bash + grep) resta il gate del rename.
+- La verifica funzionale su WordPress richiede un sito attivo in Laragon con `WP_DEBUG` a `true`. I passi manuali sono specificati nei task 4, 5 e 7.
+
+Stato al momento dell'aggiornamento: tutti e 15 i file PHP passano il lint e la suite di `test-cookie-database.php` passa (16 asserzioni), dopo il rename di massa dei task 2 e 3.
+
+I task 1, 2 e 3 sono stati completati **prima** che Laragon fosse disponibile: il loro codice PHP non è mai stato lintato durante l'esecuzione, ma lo è stato retroattivamente con esito positivo.
 
 ---
 
@@ -406,10 +416,26 @@ Risponde direttamente all'obiezione del reviewer: il limite alla scrittura su da
 In `packages/wordpress/includes/class-biscotto-api.php`, subito sotto `const TABLE = 'biscotto_log';`:
 
 ```php
-	/** Scritture massime consentite a uno stesso pseudo_id in un'ora. */
+	/** Scritture massime consentite a uno stesso indirizzo IP in un'ora. */
 	const RATE_LIMIT_MAX = 10;
 
-	/** Finestra di deduplica, in secondi. */
+	/**
+	 * Tetto globale di scritture per finestra: rete di sicurezza contro chi
+	 * distribuisce le richieste su molti indirizzi diversi.
+	 */
+	const RATE_LIMIT_GLOBAL_MAX = 500;
+
+	/**
+	 * Finestra di deduplica, in secondi.
+	 *
+	 * Attenzione: la finestra effettiva e' piu' corta di cosi'. Il pseudo_id
+	 * include un salt che ruota a mezzanotte UTC, quindi due richieste a
+	 * cavallo della mezzanotte producono pseudo_id diversi e non vengono mai
+	 * riconosciute come duplicate. La finestra reale va da 0 a 24 ore a
+	 * seconda dell'ora in cui arriva la prima richiesta. E' accettabile: la
+	 * deduplica riduce il volume, non e' un controllo di sicurezza — quello e'
+	 * il rate limit.
+	 */
 	const DEDUPE_WINDOW = DAY_IN_SECONDS;
 ```
 
@@ -438,7 +464,8 @@ Sostituisci integralmente il metodo `register_routes()` con:
 				// non esiste un utente da autorizzare e permission_callback e'
 				// __return_true. Il nonce nel body copre il CSRF, non l'abuso: il
 				// limite reale alla scrittura su database e' dato dal rate limit per
-				// pseudo_id, dalla deduplica a 24 ore e dalla retention periodica.
+				// indirizzo IP, dal tetto globale, dalla deduplica a 24 ore e dalla
+				// retention periodica.
 				'permission_callback' => '__return_true',
 			)
 		);
@@ -483,13 +510,22 @@ Sostituisci integralmente il metodo `log_consent()` con:
 		$salt   = wp_salt( 'auth' ) . gmdate( 'Y-m-d' );
 		$pseudo = hash( 'sha256', $ip . '|' . $ua . '|' . $salt );
 
-		// Rate limit: massimo RATE_LIMIT_MAX scritture all'ora per pseudo_id.
-		$rl_key = 'biscotto_rl_' . $pseudo;
-		$hits   = (int) get_transient( $rl_key );
-		if ( $hits >= self::RATE_LIMIT_MAX ) {
+		// Rate limit per indirizzo IP. La chiave NON deve contenere lo user
+		// agent ne' altri header: sono scelti dal chiamante, che potrebbe
+		// variarli a ogni richiesta per ripartire sempre da un contatore
+		// vuoto. Falsificare REMOTE_ADDR richiede invece di completare un
+		// handshake TCP. L'IP viene comunque passato per hash col salt
+		// giornaliero: non serve conservarlo in chiaro.
+		$rl_key = 'biscotto_rl_' . hash( 'sha256', $ip . '|' . $salt );
+		if ( ! $this->within_limit( $rl_key, self::RATE_LIMIT_MAX, HOUR_IN_SECONDS ) ) {
 			return new WP_REST_Response( array( 'logged' => false, 'error' => 'rate_limited' ), 429 );
 		}
-		set_transient( $rl_key, $hits + 1, HOUR_IN_SECONDS );
+
+		// Tetto globale: se il limite per IP viene aggirato distribuendo le
+		// richieste su molti indirizzi, questo resta come ultima difesa.
+		if ( ! $this->within_limit( 'biscotto_rl_global', self::RATE_LIMIT_GLOBAL_MAX, HOUR_IN_SECONDS ) ) {
+			return new WP_REST_Response( array( 'logged' => false, 'error' => 'rate_limited' ), 429 );
+		}
 
 		$action     = isset( $params['action'] ) ? sanitize_text_field( $params['action'] ) : '';
 		$policy     = isset( $params['policyVersion'] ) ? sanitize_text_field( $params['policyVersion'] ) : '';
@@ -515,11 +551,16 @@ Sostituisci integralmente il metodo `log_consent()` con:
 				$cutoff
 			)
 		);
+
+		if ( '' !== $wpdb->last_error ) {
+			return new WP_REST_Response( array( 'logged' => false, 'error' => 'db_error' ), 500 );
+		}
+
 		if ( $exists ) {
 			return new WP_REST_Response( array( 'logged' => false, 'reason' => 'duplicate' ), 200 );
 		}
 
-		$wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$inserted = $wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$table,
 			array(
 				'created_at'     => current_time( 'mysql', true ),
@@ -531,7 +572,45 @@ Sostituisci integralmente il metodo `log_consent()` con:
 			array( '%s', '%s', '%s', '%s', '%s' )
 		);
 
+		if ( false === $inserted ) {
+			return new WP_REST_Response( array( 'logged' => false, 'error' => 'db_error' ), 500 );
+		}
+
 		return new WP_REST_Response( array( 'logged' => true ), 201 );
+	}
+
+	/**
+	 * Incrementa un contatore a finestra e dice se si e' entro la soglia.
+	 *
+	 * Concorrenza: leggere-confrontare-scrivere non e' atomico, quindi
+	 * richieste simultanee possono leggere lo stesso valore e far avanzare il
+	 * contatore di uno invece che di N, superando la soglia. Con un object
+	 * cache persistente si usa wp_cache_incr, che e' atomico; senza, il
+	 * transient e' l'unica opzione offerta da WordPress e la soglia va intesa
+	 * come approssimata per eccesso.
+	 *
+	 * @param string $key    Chiave del contatore.
+	 * @param int    $max    Soglia oltre la quale si rifiuta.
+	 * @param int    $window Durata della finestra, in secondi.
+	 * @return bool True se la richiesta rientra nella soglia.
+	 */
+	private function within_limit( $key, $max, $window ) {
+		if ( wp_using_ext_object_cache() ) {
+			$hits = wp_cache_incr( $key, 1, 'biscotto' );
+			if ( false === $hits ) {
+				wp_cache_set( $key, 1, 'biscotto', $window );
+				$hits = 1;
+			}
+			return $hits <= $max;
+		}
+
+		$hits = (int) get_transient( $key );
+		if ( $hits >= $max ) {
+			return false;
+		}
+		set_transient( $key, $hits + 1, $window );
+
+		return true;
 	}
 ```
 
@@ -561,15 +640,16 @@ Su un'installazione WordPress pulita con `WP_DEBUG` a `true`, con il plugin atti
 3. **Deduplica.** Cancella il cookie di consenso nel browser e ripeti la stessa scelta.
    Atteso: il conteggio resta `1`.
 
-4. **Rate limit.** Ripeti la richiesta 12 volte con la stessa scelta:
+4. **Rate limit.** Ripeti la richiesta 12 volte con la stessa scelta, variando lo User-Agent a ogni chiamata (per verificare che il limite sia per IP e non aggirabile cambiando header):
    ```bash
    for i in $(seq 1 12); do
      curl -s -o /dev/null -w "%{http_code} " -X POST https://SITO/wp-json/biscotto/v1/log \
        -H 'Content-Type: application/json' \
+       -H "User-Agent: curl-test-$i-$RANDOM" \
        -d '{"nonce":"NONCE_DALLA_PAGINA","action":"granted_all","policyVersion":"2026-07","categories":[]}'
    done; echo
    ```
-   Atteso: i primi 10 rispondono `200` (duplicati) o `201`, dall'undicesimo in poi `429`.
+   Atteso: i primi 10 rispondono `200` (duplicati) o `201`, dall'undicesimo in poi `429`. Poiche' la chiave del rate limit e' l'IP e non il `pseudo_id`, il risultato non cambia rispetto a una richiesta con lo stesso User-Agent: prima della correzione, invece, ogni User-Agent diverso avrebbe fatto ripartire il contatore da zero e tutte e 12 le richieste avrebbero risposto `200`/`201`.
 
 Il `NONCE_DALLA_PAGINA` si legge dal sorgente della pagina pubblica, in `biscottoConfig.logNonce`.
 
