@@ -14,6 +14,12 @@ class Biscotto_Api {
 
 	const TABLE = 'biscotto_log';
 
+	/** Scritture massime consentite a uno stesso pseudo_id in un'ora. */
+	const RATE_LIMIT_MAX = 10;
+
+	/** Finestra di deduplica, in secondi. */
+	const DEDUPE_WINDOW = DAY_IN_SECONDS;
+
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
@@ -45,17 +51,26 @@ class Biscotto_Api {
 	}
 
 	public function register_routes() {
+		$settings = Biscotto::get_settings();
+
+		// Il log dei consensi e' opzionale e spento di default: se e' spento la
+		// rotta non viene registrata affatto e una richiesta riceve 404.
+		if ( empty( $settings['log_enabled'] ) ) {
+			return;
+		}
+
 		register_rest_route(
 			'biscotto/v1',
 			'/log',
 			array(
 				'methods'             => 'POST',
 				'callback'            => array( $this, 'log_consent' ),
-				// Endpoint intenzionalmente pubblico: lo chiamano i visitatori non
-				// autenticati (via navigator.sendBeacon) per registrare il proprio
-				// consenso. La protezione è nel callback stesso: nonce nel body,
-				// allowlist delle azioni e flag log_enabled. Per questo il
-				// permission_callback è __return_true (pubblico by design).
+				// Endpoint pubblico per necessita': lo chiamano visitatori anonimi
+				// via navigator.sendBeacon per registrare il proprio consenso, quindi
+				// non esiste un utente da autorizzare e permission_callback e'
+				// __return_true. Il nonce nel body copre il CSRF, non l'abuso: il
+				// limite reale alla scrittura su database e' dato dal rate limit per
+				// pseudo_id, dalla deduplica a 24 ore e dalla retention periodica.
 				'permission_callback' => '__return_true',
 			)
 		);
@@ -63,6 +78,10 @@ class Biscotto_Api {
 
 	/**
 	 * Salva un record di consenso pseudonimizzato.
+	 *
+	 * Ordine dei controlli: log attivo, nonce (CSRF), rate limit, allowlist
+	 * delle azioni, deduplica, insert. Il rate limit precede la deduplica
+	 * perche' altrimenti la query di deduplica sarebbe eseguibile senza limite.
 	 *
 	 * @param WP_REST_Request $request Richiesta.
 	 * @return WP_REST_Response
@@ -75,11 +94,28 @@ class Biscotto_Api {
 
 		$params = $request->get_json_params();
 
-		// Nonce nel body (sendBeacon non può inviare header custom): verifica anti-abuso.
+		// Nonce nel body: sendBeacon non puo' impostare header custom. Protegge
+		// dal CSRF; non e' una barriera di autorizzazione, perche' e' ottenibile
+		// da qualunque visitatore anonimo.
 		$nonce = isset( $params['nonce'] ) ? sanitize_text_field( $params['nonce'] ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
 			return new WP_REST_Response( array( 'logged' => false, 'error' => 'invalid_nonce' ), 403 );
 		}
+
+		// Pseudo-ID: hash non reversibile di IP + user agent + salt giornaliero.
+		// Permette de-duplica e rate limit senza memorizzare dati identificativi.
+		$ip     = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+		$ua     = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
+		$salt   = wp_salt( 'auth' ) . gmdate( 'Y-m-d' );
+		$pseudo = hash( 'sha256', $ip . '|' . $ua . '|' . $salt );
+
+		// Rate limit: massimo RATE_LIMIT_MAX scritture all'ora per pseudo_id.
+		$rl_key = 'biscotto_rl_' . $pseudo;
+		$hits   = (int) get_transient( $rl_key );
+		if ( $hits >= self::RATE_LIMIT_MAX ) {
+			return new WP_REST_Response( array( 'logged' => false, 'error' => 'rate_limited' ), 429 );
+		}
+		set_transient( $rl_key, $hits + 1, HOUR_IN_SECONDS );
 
 		$action     = isset( $params['action'] ) ? sanitize_text_field( $params['action'] ) : '';
 		$policy     = isset( $params['policyVersion'] ) ? sanitize_text_field( $params['policyVersion'] ) : '';
@@ -90,16 +126,27 @@ class Biscotto_Api {
 			return new WP_REST_Response( array( 'logged' => false, 'error' => 'invalid_action' ), 400 );
 		}
 
-		// Pseudo-ID: hash non reversibile di IP + user agent + salt giornaliero.
-		// Permette de-duplica relativa senza memorizzare dati identificativi.
-		$ip    = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
-		$ua    = isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '';
-		$salt  = wp_salt( 'auth' ) . gmdate( 'Y-m-d' );
-		$pseudo = hash( 'sha256', $ip . '|' . $ua . '|' . $salt );
-
 		global $wpdb;
+		$table = self::table_name();
+
+		// Deduplica: stessa scelta, stessa versione di policy, stesso visitatore
+		// entro la finestra -> nessuna riga nuova.
+		$cutoff = gmdate( 'Y-m-d H:i:s', time() - self::DEDUPE_WINDOW );
+		$exists = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->prepare(
+				"SELECT id FROM {$table} WHERE pseudo_id = %s AND policy_version = %s AND `action` = %s AND created_at > %s LIMIT 1",
+				$pseudo,
+				$policy,
+				$action,
+				$cutoff
+			)
+		);
+		if ( $exists ) {
+			return new WP_REST_Response( array( 'logged' => false, 'reason' => 'duplicate' ), 200 );
+		}
+
 		$wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-			self::table_name(),
+			$table,
 			array(
 				'created_at'     => current_time( 'mysql', true ),
 				'pseudo_id'      => $pseudo,
