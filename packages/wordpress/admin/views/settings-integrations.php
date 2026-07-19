@@ -57,6 +57,18 @@ $biscotto_opt = BISCOTTO_OPTION;
 				<?php esc_html_e( 'Registra una prova pseudonimizzata del consenso (audit GDPR).', 'biscotto-cookie-consent' ); ?>
 			</label>
 			<p class="description"><?php esc_html_e( 'Salva timestamp, versione policy, azione e categorie — senza dati identificativi diretti.', 'biscotto-cookie-consent' ); ?></p>
+			<p>
+				<label for="biscotto_log_retention_months">
+					<?php esc_html_e( 'Conserva i record di consenso per (mesi)', 'biscotto-cookie-consent' ); ?>
+				</label><br />
+				<input type="number" min="1" max="120" step="1"
+					id="biscotto_log_retention_months"
+					name="<?php echo esc_attr( $biscotto_opt ); ?>[log_retention_months]"
+					value="<?php echo esc_attr( $settings['log_retention_months'] ); ?>" />
+				<span class="description">
+					<?php esc_html_e( "I record piu' vecchi vengono eliminati automaticamente ogni giorno. Minimizzazione dei dati: conserva solo per il tempo necessario a dimostrare il consenso.", 'biscotto-cookie-consent' ); ?>
+				</span>
+			</p>
 		</td>
 	</tr>
 	<tr>

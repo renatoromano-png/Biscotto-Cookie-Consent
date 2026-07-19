@@ -213,6 +213,9 @@ class Biscotto_Admin {
 			$out['linkedin_partner_id'] = preg_replace( '/\D/', '', $input['linkedin_partner_id'] );
 		}
 		$out['log_enabled'] = empty( $input['log_enabled'] ) ? 0 : 1;
+		$out['log_retention_months'] = isset( $input['log_retention_months'] )
+			? min( 120, max( 1, absint( $input['log_retention_months'] ) ) )
+			: $out['log_retention_months'];
 
 		// --- Cookie registry ---
 		if ( isset( $input['cookies'] ) && is_array( $input['cookies'] ) ) {

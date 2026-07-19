@@ -36,15 +36,29 @@ require_once BISCOTTO_DIR . 'includes/class-biscotto-shortcodes.php';
 require_once BISCOTTO_DIR . 'includes/class-biscotto.php';
 
 /**
- * All'attivazione: pre-popola le impostazioni con i default (cookie registry incluso).
+ * All'attivazione: pre-popola le impostazioni con i default (cookie registry
+ * incluso), crea la tabella di log e schedula la potatura giornaliera.
  */
 function biscotto_activate() {
 	if ( false === get_option( BISCOTTO_OPTION ) ) {
 		add_option( BISCOTTO_OPTION, Biscotto_Consent::default_settings() );
 	}
 	Biscotto_Api::maybe_create_log_table();
+
+	if ( ! wp_next_scheduled( 'biscotto_prune_log' ) ) {
+		wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', 'biscotto_prune_log' );
+	}
 }
 register_activation_hook( __FILE__, 'biscotto_activate' );
+
+/**
+ * Alla disattivazione: rimuove l'evento cron di potatura del log.
+ * I dati restano: la rimozione e' compito di uninstall.php.
+ */
+function biscotto_deactivate() {
+	wp_clear_scheduled_hook( 'biscotto_prune_log' );
+}
+register_deactivation_hook( __FILE__, 'biscotto_deactivate' );
 
 /**
  * Bootstrap.

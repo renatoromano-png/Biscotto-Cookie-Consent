@@ -59,6 +59,7 @@ class Biscotto_Consent {
 
 			// --- Log consensi (server-side, opzionale) ---
 			'log_enabled'          => 0,
+			'log_retention_months' => 12,          // conservazione dei record di consenso
 
 			// --- Cookie registry ---
 			'cookies'              => self::default_registry(),

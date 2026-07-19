@@ -46,8 +46,12 @@ class Biscotto_Api {
 	 */
 	const DEDUPE_WINDOW = DAY_IN_SECONDS;
 
+	/** Mesi di conservazione dei record di log, se non configurato altrimenti. */
+	const DEFAULT_RETENTION_MONTHS = 12;
+
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
+		add_action( 'biscotto_prune_log', array( $this, 'prune_log' ) );
 	}
 
 	public static function table_name() {
@@ -287,5 +291,30 @@ class Biscotto_Api {
 		set_transient( $key, $hits + 1, $window );
 
 		return true;
+	}
+
+	/**
+	 * Elimina i record di log piu' vecchi della finestra di conservazione.
+	 * Eseguito una volta al giorno dall'evento cron biscotto_prune_log.
+	 *
+	 * @return int Numero di record eliminati.
+	 */
+	public function prune_log() {
+		$settings = Biscotto::get_settings();
+		$months   = isset( $settings['log_retention_months'] )
+			? absint( $settings['log_retention_months'] )
+			: self::DEFAULT_RETENTION_MONTHS;
+
+		if ( $months < 1 ) {
+			$months = self::DEFAULT_RETENTION_MONTHS;
+		}
+
+		global $wpdb;
+		$table  = self::table_name();
+		$cutoff = gmdate( 'Y-m-d H:i:s', time() - ( $months * MONTH_IN_SECONDS ) );
+
+		return (int) $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->prepare( "DELETE FROM {$table} WHERE created_at < %s", $cutoff )
+		);
 	}
 }
