@@ -61,6 +61,22 @@ function biscotto_deactivate() {
 register_deactivation_hook( __FILE__, 'biscotto_deactivate' );
 
 /**
+ * Rete di sicurezza per la potatura del log.
+ *
+ * Gli hook di attivazione non vengono rieseguiti quando il plugin viene solo
+ * aggiornato restando attivo: un sito gia' in funzione non otterrebbe mai
+ * l'evento e la retention resterebbe un no-op silenzioso, senza errori ne'
+ * avvisi. Il controllo gira solo in area amministrativa e legge l'opzione dei
+ * cron, gia' caricata: costo trascurabile.
+ */
+function biscotto_ensure_prune_scheduled() {
+	if ( ! wp_next_scheduled( 'biscotto_prune_log' ) ) {
+		wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', 'biscotto_prune_log' );
+	}
+}
+add_action( 'admin_init', 'biscotto_ensure_prune_scheduled' );
+
+/**
  * Bootstrap.
  */
 function biscotto() {

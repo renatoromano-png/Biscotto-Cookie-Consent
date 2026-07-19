@@ -297,6 +297,11 @@ class Biscotto_Api {
 	 * Elimina i record di log piu' vecchi della finestra di conservazione.
 	 * Eseguito una volta al giorno dall'evento cron biscotto_prune_log.
 	 *
+	 * Nota: MONTH_IN_SECONDS vale 30 giorni esatti, quindi "12 mesi" sono 360
+	 * giorni e non un anno di calendario. Lo scarto e' in favore della
+	 * minimizzazione — si cancella prima, mai dopo — ma va tenuto presente se
+	 * si confronta la data di cancellazione con un conteggio di mesi reali.
+	 *
 	 * @return int Numero di record eliminati.
 	 */
 	public function prune_log() {
