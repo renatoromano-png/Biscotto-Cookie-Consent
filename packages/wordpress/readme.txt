@@ -1,4 +1,4 @@
-=== Biscotto – Cookie Consent & Consent Mode ===
+=== Biscotto – Cookie Consent ===
 Contributors: renatosaka
 Tags: cookie, consent, gdpr, cookie banner, consent mode
 Requires at least: 5.9

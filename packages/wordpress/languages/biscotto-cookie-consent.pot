@@ -9,8 +9,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language-Team: Food & Tech\n"
-"X-Domain: biscotto\n"
+"X-Domain: biscotto-cookie-consent\n"
 
 #. Generato da WP-CLI i18n in fase di build:
-#.   wp i18n make-pot packages/wordpress packages/wordpress/languages/biscotto.pot
+#.   wp i18n make-pot packages/wordpress packages/wordpress/languages/biscotto-cookie-consent.pot
 #. Questo file è un segnaposto: rigenerarlo dopo modifiche alle stringhe.

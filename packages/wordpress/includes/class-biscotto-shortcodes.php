@@ -33,10 +33,10 @@ class Biscotto_Shortcodes {
 	 */
 	private function category_labels() {
 		return array(
-			'necessary'   => __( 'Necessari', 'biscotto' ),
-			'analytics'   => __( 'Analytics', 'biscotto' ),
-			'marketing'   => __( 'Marketing', 'biscotto' ),
-			'preferences' => __( 'Preferenze', 'biscotto' ),
+			'necessary'   => __( 'Necessari', 'biscotto-cookie-consent' ),
+			'analytics'   => __( 'Analytics', 'biscotto-cookie-consent' ),
+			'marketing'   => __( 'Marketing', 'biscotto-cookie-consent' ),
+			'preferences' => __( 'Preferenze', 'biscotto-cookie-consent' ),
 		);
 	}
 
@@ -69,8 +69,8 @@ class Biscotto_Shortcodes {
 			'biscotto-cookie-policy',
 			'biscottoPolicy',
 			array(
-				'granted'    => __( 'Attivo', 'biscotto' ),
-				'denied'     => __( 'Non attivo', 'biscotto' ),
+				'granted'    => __( 'Attivo', 'biscotto-cookie-consent' ),
+				'denied'     => __( 'Non attivo', 'biscotto-cookie-consent' ),
 				'categories' => $this->category_labels(),
 			)
 		);
@@ -97,7 +97,7 @@ class Biscotto_Shortcodes {
 		}
 
 		// Stile Complianz: categoria → servizio (con link informativa) → cookie.
-		$other = __( 'Altri', 'biscotto' );
+		$other = __( 'Altri', 'biscotto-cookie-consent' );
 		$tree  = array();
 		foreach ( array_keys( $labels ) as $cat ) {
 			$tree[ $cat ] = array();
@@ -129,12 +129,12 @@ class Biscotto_Shortcodes {
 				echo '<div class="biscotto-service">';
 				echo '<h4 class="biscotto-service-name">' . esc_html( $service );
 				if ( $policy ) {
-					echo ' <a class="biscotto-service-link" href="' . esc_url( $policy ) . '" target="_blank" rel="noopener nofollow">' . esc_html__( 'Informativa', 'biscotto' ) . '</a>';
+					echo ' <a class="biscotto-service-link" href="' . esc_url( $policy ) . '" target="_blank" rel="noopener nofollow">' . esc_html__( 'Informativa', 'biscotto-cookie-consent' ) . '</a>';
 				}
 				echo '</h4>';
 				echo '<table class="biscotto-table"><thead><tr>';
-				echo '<th>' . esc_html__( 'Nome', 'biscotto' ) . '</th>';
-				echo '<th>' . esc_html__( 'Durata', 'biscotto' ) . '</th>';
+				echo '<th>' . esc_html__( 'Nome', 'biscotto-cookie-consent' ) . '</th>';
+				echo '<th>' . esc_html__( 'Durata', 'biscotto-cookie-consent' ) . '</th>';
 				echo '</tr></thead><tbody>';
 				foreach ( $rows as $r ) {
 					$name     = isset( $r['name'] ) ? $r['name'] : '';
@@ -163,8 +163,8 @@ class Biscotto_Shortcodes {
 	public function consent_settings( $atts ) {
 		$atts = shortcode_atts(
 			array(
-				'button' => __( 'Gestisci le tue scelte', 'biscotto' ),
-				'title'  => __( 'Le tue preferenze attuali', 'biscotto' ),
+				'button' => __( 'Gestisci le tue scelte', 'biscotto-cookie-consent' ),
+				'title'  => __( 'Le tue preferenze attuali', 'biscotto-cookie-consent' ),
 			),
 			$atts,
 			'biscotto_consent_settings'
@@ -177,7 +177,7 @@ class Biscotto_Shortcodes {
 		}
 		// Riempito via JS al load e ad ogni evento biscotto:consent. Fallback no-JS sotto.
 		echo '<ul class="biscotto-consent-state" data-biscotto-consent-state>';
-		echo '<li>' . esc_html__( 'Attiva JavaScript per vedere e modificare le tue scelte.', 'biscotto' ) . '</li>';
+		echo '<li>' . esc_html__( 'Attiva JavaScript per vedere e modificare le tue scelte.', 'biscotto-cookie-consent' ) . '</li>';
 		echo '</ul>';
 		echo '<button type="button" class="biscotto-policy-manage">' . esc_html( $atts['button'] ) . '</button>';
 		echo '</div>';

@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       Biscotto – Cookie Consent & Consent Mode
+ * Plugin Name:       Biscotto – Cookie Consent
  * Plugin URI:        https://github.com/renatoromano-png/Biscotto
  * Description:       GDPR/ePrivacy cookie consent compliant with the Italian DPA (Garante) guidelines: Google Consent Mode v2, GTM and LinkedIn. No page or CPT limits.
  * Version:           1.5.0
@@ -10,7 +10,7 @@
  * Author URI:        https://github.com/renatoromano-png
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       biscotto
+ * Text Domain:       biscotto-cookie-consent
  * Domain Path:       /languages
  *
  * @package Biscotto
