@@ -82,7 +82,7 @@ Yes, in the specific cases described under "External services" above, and always
 == Upgrade Notice ==
 
 = 1.5.0 =
-Renamed to "Biscotto". Your saved settings are preserved. Internal cleanups for WordPress.org guideline compliance.
+Renamed to "Biscotto". Internal cleanups for WordPress.org guideline compliance.
 
 = 1.4.0 =
 Scan tab gains database-enrichment and update-check buttons; Cookies tab gains a one-click "copy shortcode" box for your cookie policy page.
@@ -102,7 +102,7 @@ First public release.
 == Changelog ==
 
 = 1.5.0 =
-* Plugin renamed to "Biscotto – Cookie Consent & Consent Mode"; the text domain is now `biscotto`. Your saved settings are preserved.
+* Plugin renamed to "Biscotto – Cookie Consent & Consent Mode"; the text domain is now `biscotto`.
 * Compliance: the Consent Mode v2 default and the Google Tag Manager loader are now added with `wp_add_inline_script()` on enqueued handles instead of being printed inline; the cookie-registry admin behaviour moved to `admin/js/cookies.js`, enqueued with `wp_enqueue_script()`.
 * Docs: added an "External services" section documenting Google Tag Manager, the LinkedIn Insight Tag and the on-demand GitHub update check (what is sent, when, and links to each service's terms and privacy policy).
 
