@@ -128,8 +128,11 @@ else
   FAIL=1
 fi
 
-# Nessuna stringa tradotta col vecchio text domain 'biscotto'.
-OLD_TD="$(grep -rn "'biscotto'" "$WP" --include=*.php 2>/dev/null || true)"
+# Il vecchio text domain 'biscotto' non deve comparire come argomento delle
+# funzioni di traduzione. Non si puo' cercare 'biscotto' ovunque: restano
+# legittimi il nome della funzione di bootstrap (gli identificatori PHP non
+# ammettono trattini) e lo slug della pagina admin.
+OLD_TD="$(grep -rnE "\b(__|_e|_x|_n|_nx|esc_html__|esc_html_e|esc_html_x|esc_attr__|esc_attr_e|esc_attr_x)\(.*,[[:space:]]*'biscotto'[[:space:]]*[,)]" "$WP" --include=*.php 2>/dev/null || true)"
 if [ -n "$OLD_TD" ]; then
   echo "FAIL: text domain 'biscotto' ancora usato nelle stringhe tradotte"
   echo "$OLD_TD" | head -20
