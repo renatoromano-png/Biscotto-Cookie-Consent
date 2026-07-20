@@ -148,9 +148,15 @@ class Biscotto_Api {
 		// agent ne' altri header: sono scelti dal chiamante, che potrebbe
 		// variarli a ogni richiesta per ripartire sempre da un contatore
 		// vuoto. Falsificare REMOTE_ADDR richiede invece di completare un
-		// handshake TCP. L'IP viene comunque passato per hash col salt
-		// giornaliero: non serve conservarlo in chiaro.
-		$rl_key = 'biscotto_rl_' . hash( 'sha256', $ip . '|' . $salt );
+		// handshake TCP. L'IP viene comunque passato per hash: non serve
+		// conservarlo in chiaro.
+		//
+		// Qui si usa wp_salt() senza la componente giornaliera che entra nel
+		// pseudo_id: un salt che ruota a mezzanotte UTC cambierebbe la chiave
+		// e azzererebbe il contatore a meta' finestra, permettendo il doppio
+		// delle scritture a cavallo della mezzanotte. Il contatore scade da
+		// solo dopo un'ora, quindi la rotazione non aggiungerebbe nulla.
+		$rl_key = 'biscotto_rl_' . hash( 'sha256', $ip . '|' . wp_salt( 'auth' ) );
 		if ( ! $this->within_limit( $rl_key, self::RATE_LIMIT_MAX, HOUR_IN_SECONDS ) ) {
 			return new WP_REST_Response( array( 'logged' => false, 'error' => 'rate_limited' ), 429 );
 		}

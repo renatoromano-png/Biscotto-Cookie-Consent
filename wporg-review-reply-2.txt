@@ -27,7 +27,10 @@ without a real limit:
   rows already written in the past hour and refuses beyond a site-wide ceiling.
   It counts rows rather than requests, so rejected requests cannot consume the
   quota, and the bound does not depend on a cache backend being present;
-- identical submissions from the same visitor within 24 hours write nothing;
+- identical submissions from the same visitor write nothing for up to 24 hours.
+  The visitor identifier is salted per day, so that window is shorter for
+  submissions made near midnight UTC; de-duplication is a volume reducer, not
+  the bound — the two limits above are;
 - records are deleted automatically by a daily cron job once they exceed the
   configured retention period, 12 months by default.
 
@@ -47,7 +50,13 @@ so the administrator can build an accurate cookie policy. There is no
 wp_remote_get, no enqueue and no iframe pointing at them — only string
 comparisons against hostnames found in the site's own markup.
 
-The only outbound request the plugin makes is the on-demand GitHub API call
+For completeness, since grepping that file will turn it up: there is one
+wp_remote_get in class-biscotto-scanner.php, used by the scanner to fetch a page
+of the administrator's own site in order to inspect its markup. It is restricted
+to first-party URLs by an is_first_party() check before the request is made, so
+it cannot be pointed at an external host.
+
+The only outbound request to a third party is the on-demand GitHub API call
 already documented under "External services" in readme.txt, which happens solely
 when an administrator clicks "Check for database updates".
 
