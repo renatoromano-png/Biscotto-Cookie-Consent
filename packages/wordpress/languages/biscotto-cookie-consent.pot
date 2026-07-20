@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Biscotto 1.5.0\n"
-"Report-Msgid-Bugs-To: https://github.com/renatoromano-png/Biscotto/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/renatoromano-png/Biscotto-Cookie-Consent/issues\n"
 "POT-Creation-Date: 2026-07-10T00:00:00+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
