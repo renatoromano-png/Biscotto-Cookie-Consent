@@ -56,7 +56,7 @@ Privacy policy: https://docs.github.com/site-policy/privacy-policies/github-gene
 
 == Installation ==
 
-1. Upload the `biscotto` folder to `/wp-content/plugins/`.
+1. Upload the `biscotto-cookie-consent` folder to `/wp-content/plugins/`.
 2. Activate the plugin from the Plugins menu.
 3. Go to Settings &rarr; Biscotto and configure texts, cookies and integrations.
 
@@ -70,6 +70,10 @@ The plugin implements the technical requirements of the 10 June 2021 guidelines.
 
 = Does it send data to external services? =
 Yes, in the specific cases described under "External services" above, and always under your control. In short: the Google (Consent Mode/GTM) and LinkedIn scripts load only if you configure them and only after consent; the "Check for database updates" button contacts the public GitHub API only when you click it, sending no personal or site data. Everything else stays local — Biscotto does not otherwise communicate with any third-party server — and the optional consent log stays pseudonymized in your site's database.
+
+= How is the optional consent log protected from abuse? =
+
+The log is disabled by default, and while it is disabled the REST route is not registered at all. When enabled, the route is public by necessity — anonymous visitors record their own consent through it via `navigator.sendBeacon`, so there is no user to authorise — but writes are bounded by limits that do not depend on the nonce. Each address is allowed 10 writes per hour. Independently of that, the plugin counts the rows already written in the past hour immediately before inserting and refuses beyond a site-wide ceiling, so rejected requests cannot consume the quota; the ceiling can be adjusted with the `biscotto_write_ceiling` filter. Identical submissions from the same visitor within 24 hours write nothing, and records older than the configured retention period (12 months by default) are deleted daily.
 
 == Screenshots ==
 
