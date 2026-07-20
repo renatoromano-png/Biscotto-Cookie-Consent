@@ -66,7 +66,10 @@ Please reserve the slug "biscotto-cookie-consent" (display name "Biscotto –
 Cookie Consent") instead of "foodandtech-cookie-consent-manager", as in my
 previous messages. The text domain matches that slug throughout.
 
-Tested on a clean WordPress install with WP_DEBUG enabled.
+[PRIMA DI INVIARE: esegui la verifica su WordPress con WP_DEBUG, poi
+sostituisci questa riga con "Tested on a clean WordPress install with WP_DEBUG
+enabled." Se non l'hai eseguita, cancella semplicemente queste righe: non
+dichiarare test che non hai fatto.]
 
 Thanks!
 

@@ -162,8 +162,22 @@ class Biscotto_Api {
 		}
 
 		$action     = isset( $params['action'] ) ? sanitize_text_field( $params['action'] ) : '';
-		$policy     = isset( $params['policyVersion'] ) ? sanitize_text_field( $params['policyVersion'] ) : '';
-		$categories = isset( $params['categories'] ) && is_array( $params['categories'] ) ? $params['categories'] : array();
+		// Troncato a 32 caratteri come la colonna: in SQL strict un valore piu'
+		// lungo farebbe fallire l'insert, in modalita' permissiva verrebbe
+		// troncato in silenzio.
+		$policy     = isset( $params['policyVersion'] ) ? substr( sanitize_text_field( $params['policyVersion'] ), 0, 32 ) : '';
+		// Le categorie vanno filtrate sull'allowlist, non accettate come
+		// arrivano: senza questo, il tetto sulle scritture limita il NUMERO di
+		// righe ma non la loro DIMENSIONE, e un chiamante potrebbe far
+		// crescere la tabella con payload arbitrari restando dentro il limite.
+		$categories = isset( $params['categories'] ) && is_array( $params['categories'] )
+			? array_values(
+				array_intersect(
+					array_map( 'sanitize_key', $params['categories'] ),
+					Biscotto_Consent::categories()
+				)
+			)
+			: array();
 
 		$allowed = array( 'granted_all', 'rejected_all', 'custom', 'default_kept' );
 		if ( ! in_array( $action, $allowed, true ) ) {
@@ -191,7 +205,7 @@ class Biscotto_Api {
 		}
 
 		if ( $exists ) {
-			return new WP_REST_Response( array( 'logged' => false, 'reason' => 'duplicate' ), 200 );
+			return new WP_REST_Response( array( 'logged' => false, 'error' => 'duplicate' ), 200 );
 		}
 
 		// Tetto sulle scritture: si contano le righe gia' presenti nella

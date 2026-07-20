@@ -85,6 +85,9 @@ The log is disabled by default, and while it is disabled the REST route is not r
 
 == Upgrade Notice ==
 
+= 1.5.3 =
+Breaking: the plugin, its slug and its public JavaScript API were renamed. Saved settings and consent log records are NOT migrated and must be set up again. Update your pages: the shortcodes are now `[biscotto_cookie_table]`, `[biscotto_consent_settings]` and `[biscotto_cookie_policy]`; blocked scripts must use `data-biscotto-category` instead of the old attribute, or they will stay blocked silently. Visitors are asked for consent again, because the browser storage key changed.
+
 = 1.5.0 =
 Renamed to "Biscotto". Internal cleanups for WordPress.org guideline compliance.
 
