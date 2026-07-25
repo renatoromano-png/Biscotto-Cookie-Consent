@@ -38,18 +38,38 @@ class Biscotto_Cookie_Database {
 			'domain'   => array(),
 		);
 
-		$handle = @fopen( $csv_path, 'r' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors -- file può mancare, gestito sotto
-		if ( ! $handle ) {
+		// Lettura via WP_Filesystem (le funzioni fopen/fread dirette sono
+		// vietate dalle linee guida WordPress.org). Il file è un CSV di sola
+		// lettura vendorizzato col plugin e build_index() gira solo on-demand
+		// da un'azione admin, quindi caricarlo in memoria è accettabile.
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+		global $wp_filesystem;
+		if ( ! $wp_filesystem ) {
 			return $index;
 		}
 
-		$header = fgetcsv( $handle );
-		if ( ! is_array( $header ) ) {
-			fclose( $handle );
-			return $index;
+		$raw = $wp_filesystem->get_contents( $csv_path );
+		if ( false === $raw || '' === $raw ) {
+			return $index; // file mancante o illeggibile: nessun arricchimento
 		}
 
-		while ( ( $cols = fgetcsv( $handle ) ) !== false ) {
+		$header = null;
+
+		foreach ( preg_split( "/\r\n|\n|\r/", $raw ) as $line ) {
+			if ( '' === $line ) {
+				continue; // riga vuota (inclusa l'eventuale finale)
+			}
+
+			$cols = str_getcsv( $line );
+
+			if ( null === $header ) {
+				$header = $cols; // prima riga non vuota = intestazione
+				continue;
+			}
+
 			if ( count( $cols ) !== count( $header ) ) {
 				continue; // riga malformata, salta
 			}
@@ -80,8 +100,6 @@ class Biscotto_Cookie_Database {
 				$index['domain'][ $domain ] = $entry;
 			}
 		}
-
-		fclose( $handle );
 
 		return $index;
 	}

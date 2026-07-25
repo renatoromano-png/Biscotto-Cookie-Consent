@@ -192,7 +192,7 @@ class Biscotto_Api {
 		$cutoff = gmdate( 'Y-m-d H:i:s', time() - self::DEDUPE_WINDOW );
 		$exists = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$wpdb->prepare(
-				"SELECT id FROM {$table} WHERE pseudo_id = %s AND policy_version = %s AND `action` = %s AND created_at > %s LIMIT 1",
+				"SELECT id FROM {$table} WHERE pseudo_id = %s AND policy_version = %s AND `action` = %s AND created_at > %s LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- {$table} e' $wpdb->prefix . self::TABLE (costante), non input; i nomi tabella non sono parametrizzabili.
 				$pseudo,
 				$policy,
 				$action,
@@ -216,7 +216,7 @@ class Biscotto_Api {
 		$ceiling = max( 1, (int) apply_filters( 'biscotto_write_ceiling', self::WRITE_CEILING_MAX ) );
 		$written = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$table} WHERE created_at > %s",
+				"SELECT COUNT(*) FROM {$table} WHERE created_at > %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- {$table} e' $wpdb->prefix . self::TABLE (costante), non input; i nomi tabella non sono parametrizzabili.
 				gmdate( 'Y-m-d H:i:s', time() - self::WRITE_CEILING_WINDOW )
 			)
 		);
@@ -339,7 +339,7 @@ class Biscotto_Api {
 		$cutoff = gmdate( 'Y-m-d H:i:s', time() - ( $months * MONTH_IN_SECONDS ) );
 
 		return (int) $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-			$wpdb->prepare( "DELETE FROM {$table} WHERE created_at < %s", $cutoff )
+			$wpdb->prepare( "DELETE FROM {$table} WHERE created_at < %s", $cutoff ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- {$table} e' $wpdb->prefix . self::TABLE (costante), non input; i nomi tabella non sono parametrizzabili.
 		);
 	}
 }
