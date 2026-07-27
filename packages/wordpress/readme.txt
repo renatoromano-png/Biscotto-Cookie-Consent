@@ -4,7 +4,7 @@ Tags: cookie, consent, gdpr, cookie banner, consent mode
 Requires at least: 5.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.5.3
+Stable tag: 1.5.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -85,6 +85,9 @@ The log is disabled by default, and while it is disabled the REST route is not r
 
 == Upgrade Notice ==
 
+= 1.5.4 =
+Internal scanner refactor only; no action required and no functional change.
+
 = 1.5.3 =
 Breaking: plugin, slug and JavaScript API renamed. Settings and consent-log records are NOT migrated - reconfigure them. Shortcodes are now [biscotto_cookie_table], [biscotto_consent_settings], [biscotto_cookie_policy]; blocked scripts must use data-biscotto-category. Visitors must consent again.
 
@@ -107,6 +110,9 @@ Adds a runtime cookie scanner to detect cookies and third-party services loaded 
 First public release.
 
 == Changelog ==
+
+= 1.5.4 =
+* Internal: the scanner's host and cookie classification tables no longer store the vendor's public privacy-policy link inline next to each hostname; the link is now resolved from a separate service-name lookup. No functional change — the scanner still only matches hostnames found in the site's own markup and never contacts them.
 
 = 1.5.3 =
 * Plugin renamed to "Biscotto – Cookie Consent"; slug and text domain are now `biscotto-cookie-consent`.

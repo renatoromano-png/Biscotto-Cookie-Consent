@@ -589,7 +589,9 @@ class Biscotto_Scanner {
 	}
 
 	/**
-	 * Mappa dominio → servizio/categoria/policy. Null se sconosciuto.
+	 * Mappa dominio → [servizio, categoria]. Null se sconosciuto. È una tabella
+	 * di sola classificazione: associa un hostname trovato nel markup del sito
+	 * a un vendor e a una categoria di cookie; non effettua alcuna richiesta.
 	 *
 	 * @param string $host Host (lowercase).
 	 * @return array|null
@@ -597,57 +599,57 @@ class Biscotto_Scanner {
 	private function classify_host( $host ) {
 		$map = array(
 			// Google Fonts: nessun cookie ma espone l'IP → preferenze.
-			'fonts.googleapis.com'        => array( 'Google Fonts', 'preferences', 'https://policies.google.com/privacy' ),
-			'fonts.gstatic.com'           => array( 'Google Fonts', 'preferences', 'https://policies.google.com/privacy' ),
+			'fonts.googleapis.com'        => array( 'Google Fonts', 'preferences' ),
+			'fonts.gstatic.com'           => array( 'Google Fonts', 'preferences' ),
 			// Google Maps.
-			'maps.googleapis.com'         => array( 'Google Maps', 'marketing', 'https://policies.google.com/privacy' ),
-			'maps.google.com'             => array( 'Google Maps', 'marketing', 'https://policies.google.com/privacy' ),
+			'maps.googleapis.com'         => array( 'Google Maps', 'marketing' ),
+			'maps.google.com'             => array( 'Google Maps', 'marketing' ),
 			// Google Analytics / Tag Manager.
-			'www.google-analytics.com'    => array( 'Google Analytics', 'analytics', 'https://policies.google.com/privacy' ),
-			'google-analytics.com'        => array( 'Google Analytics', 'analytics', 'https://policies.google.com/privacy' ),
-			'analytics.google.com'        => array( 'Google Analytics', 'analytics', 'https://policies.google.com/privacy' ),
-			'www.googletagmanager.com'    => array( 'Google Tag Manager', 'analytics', 'https://policies.google.com/privacy' ),
-			'googletagmanager.com'        => array( 'Google Tag Manager', 'analytics', 'https://policies.google.com/privacy' ),
+			'www.google-analytics.com'    => array( 'Google Analytics', 'analytics' ),
+			'google-analytics.com'        => array( 'Google Analytics', 'analytics' ),
+			'analytics.google.com'        => array( 'Google Analytics', 'analytics' ),
+			'www.googletagmanager.com'    => array( 'Google Tag Manager', 'analytics' ),
+			'googletagmanager.com'        => array( 'Google Tag Manager', 'analytics' ),
 			// Google Ads / DoubleClick.
-			'googleadservices.com'        => array( 'Google Ads', 'marketing', 'https://policies.google.com/privacy' ),
-			'www.googleadservices.com'    => array( 'Google Ads', 'marketing', 'https://policies.google.com/privacy' ),
-			'googlesyndication.com'       => array( 'Google Ads', 'marketing', 'https://policies.google.com/privacy' ),
-			'pagead2.googlesyndication.com' => array( 'Google Ads', 'marketing', 'https://policies.google.com/privacy' ),
-			'doubleclick.net'             => array( 'Google Ads', 'marketing', 'https://policies.google.com/privacy' ),
-			'stats.g.doubleclick.net'     => array( 'Google Ads', 'marketing', 'https://policies.google.com/privacy' ),
+			'googleadservices.com'        => array( 'Google Ads', 'marketing' ),
+			'www.googleadservices.com'    => array( 'Google Ads', 'marketing' ),
+			'googlesyndication.com'       => array( 'Google Ads', 'marketing' ),
+			'pagead2.googlesyndication.com' => array( 'Google Ads', 'marketing' ),
+			'doubleclick.net'             => array( 'Google Ads', 'marketing' ),
+			'stats.g.doubleclick.net'     => array( 'Google Ads', 'marketing' ),
 			// YouTube.
-			'www.youtube.com'             => array( 'YouTube', 'marketing', 'https://policies.google.com/privacy' ),
-			'youtube.com'                 => array( 'YouTube', 'marketing', 'https://policies.google.com/privacy' ),
-			'www.youtube-nocookie.com'    => array( 'YouTube (no-cookie)', 'marketing', 'https://policies.google.com/privacy' ),
-			'youtube-nocookie.com'        => array( 'YouTube (no-cookie)', 'marketing', 'https://policies.google.com/privacy' ),
-			'i.ytimg.com'                 => array( 'YouTube', 'marketing', 'https://policies.google.com/privacy' ),
+			'www.youtube.com'             => array( 'YouTube', 'marketing' ),
+			'youtube.com'                 => array( 'YouTube', 'marketing' ),
+			'www.youtube-nocookie.com'    => array( 'YouTube (no-cookie)', 'marketing' ),
+			'youtube-nocookie.com'        => array( 'YouTube (no-cookie)', 'marketing' ),
+			'i.ytimg.com'                 => array( 'YouTube', 'marketing' ),
 			// reCAPTCHA (tecnico).
-			'www.gstatic.com'             => array( 'Google (gstatic)', 'necessary', 'https://policies.google.com/privacy' ),
-			'www.recaptcha.net'           => array( 'Google reCAPTCHA', 'necessary', 'https://policies.google.com/privacy' ),
+			'www.gstatic.com'             => array( 'Google (gstatic)', 'necessary' ),
+			'www.recaptcha.net'           => array( 'Google reCAPTCHA', 'necessary' ),
 			// Gravatar.
-			'secure.gravatar.com'         => array( 'Gravatar', 'preferences', 'https://automattic.com/privacy/' ),
-			'gravatar.com'                => array( 'Gravatar', 'preferences', 'https://automattic.com/privacy/' ),
+			'secure.gravatar.com'         => array( 'Gravatar', 'preferences' ),
+			'gravatar.com'                => array( 'Gravatar', 'preferences' ),
 			// Meta / Facebook.
-			'connect.facebook.net'        => array( 'Meta Pixel', 'marketing', 'https://www.facebook.com/privacy/policy/' ),
-			'www.facebook.com'            => array( 'Meta', 'marketing', 'https://www.facebook.com/privacy/policy/' ),
-			'facebook.com'                => array( 'Meta', 'marketing', 'https://www.facebook.com/privacy/policy/' ),
+			'connect.facebook.net'        => array( 'Meta Pixel', 'marketing' ),
+			'www.facebook.com'            => array( 'Meta', 'marketing' ),
+			'facebook.com'                => array( 'Meta', 'marketing' ),
 			// LinkedIn.
-			'snap.licdn.com'              => array( 'LinkedIn Insight', 'marketing', 'https://www.linkedin.com/legal/privacy-policy' ),
-			'px.ads.linkedin.com'         => array( 'LinkedIn Ads', 'marketing', 'https://www.linkedin.com/legal/privacy-policy' ),
-			'www.linkedin.com'            => array( 'LinkedIn', 'marketing', 'https://www.linkedin.com/legal/privacy-policy' ),
+			'snap.licdn.com'              => array( 'LinkedIn Insight', 'marketing' ),
+			'px.ads.linkedin.com'         => array( 'LinkedIn Ads', 'marketing' ),
+			'www.linkedin.com'            => array( 'LinkedIn', 'marketing' ),
 			// Hotjar.
-			'static.hotjar.com'           => array( 'Hotjar', 'analytics', 'https://www.hotjar.com/legal/policies/privacy/' ),
-			'script.hotjar.com'           => array( 'Hotjar', 'analytics', 'https://www.hotjar.com/legal/policies/privacy/' ),
+			'static.hotjar.com'           => array( 'Hotjar', 'analytics' ),
+			'script.hotjar.com'           => array( 'Hotjar', 'analytics' ),
 			// Microsoft Clarity.
-			'www.clarity.ms'              => array( 'Microsoft Clarity', 'analytics', 'https://privacy.microsoft.com/privacystatement' ),
-			'clarity.ms'                  => array( 'Microsoft Clarity', 'analytics', 'https://privacy.microsoft.com/privacystatement' ),
+			'www.clarity.ms'              => array( 'Microsoft Clarity', 'analytics' ),
+			'clarity.ms'                  => array( 'Microsoft Clarity', 'analytics' ),
 			// Cloudflare insights.
-			'static.cloudflareinsights.com' => array( 'Cloudflare Insights', 'analytics', 'https://www.cloudflare.com/privacypolicy/' ),
+			'static.cloudflareinsights.com' => array( 'Cloudflare Insights', 'analytics' ),
 			// Vimeo.
-			'player.vimeo.com'            => array( 'Vimeo', 'marketing', 'https://vimeo.com/privacy' ),
-			'vimeo.com'                   => array( 'Vimeo', 'marketing', 'https://vimeo.com/privacy' ),
+			'player.vimeo.com'            => array( 'Vimeo', 'marketing' ),
+			'vimeo.com'                   => array( 'Vimeo', 'marketing' ),
 			// TikTok.
-			'analytics.tiktok.com'        => array( 'TikTok Pixel', 'marketing', 'https://www.tiktok.com/legal/privacy-policy' ),
+			'analytics.tiktok.com'        => array( 'TikTok Pixel', 'marketing' ),
 		);
 
 		if ( isset( $map[ $host ] ) ) {
@@ -665,7 +667,7 @@ class Biscotto_Scanner {
 	}
 
 	/**
-	 * Mappa nome cookie → servizio/categoria/policy (con match per prefisso).
+	 * Mappa nome cookie → [servizio, categoria] (con match per prefisso).
 	 *
 	 * @param string $name Nome cookie.
 	 * @return array
@@ -673,46 +675,46 @@ class Biscotto_Scanner {
 	private function classify_cookie( $name ) {
 		$rules = array(
 			// Google Analytics.
-			'_ga'              => array( 'Google Analytics 4', 'analytics', 'https://policies.google.com/privacy' ),
-			'_gid'             => array( 'Google Analytics', 'analytics', 'https://policies.google.com/privacy' ),
-			'_gat'             => array( 'Google Analytics', 'analytics', 'https://policies.google.com/privacy' ),
+			'_ga'              => array( 'Google Analytics 4', 'analytics' ),
+			'_gid'             => array( 'Google Analytics', 'analytics' ),
+			'_gat'             => array( 'Google Analytics', 'analytics' ),
 			// Google Ads.
-			'_gcl'             => array( 'Google Ads', 'marketing', 'https://policies.google.com/privacy' ),
+			'_gcl'             => array( 'Google Ads', 'marketing' ),
 			// Meta.
-			'_fbp'             => array( 'Meta Pixel', 'marketing', 'https://www.facebook.com/privacy/policy/' ),
-			'_fbc'             => array( 'Meta Pixel', 'marketing', 'https://www.facebook.com/privacy/policy/' ),
-			'fr'               => array( 'Meta', 'marketing', 'https://www.facebook.com/privacy/policy/' ),
+			'_fbp'             => array( 'Meta Pixel', 'marketing' ),
+			'_fbc'             => array( 'Meta Pixel', 'marketing' ),
+			'fr'               => array( 'Meta', 'marketing' ),
 			// LinkedIn.
-			'li_gc'            => array( 'LinkedIn', 'marketing', 'https://www.linkedin.com/legal/privacy-policy' ),
-			'bcookie'          => array( 'LinkedIn', 'marketing', 'https://www.linkedin.com/legal/privacy-policy' ),
-			'bscookie'         => array( 'LinkedIn', 'marketing', 'https://www.linkedin.com/legal/privacy-policy' ),
-			'lidc'             => array( 'LinkedIn', 'marketing', 'https://www.linkedin.com/legal/privacy-policy' ),
-			'usermatchhistory' => array( 'LinkedIn', 'marketing', 'https://www.linkedin.com/legal/privacy-policy' ),
-			'an_ua'            => array( 'LinkedIn', 'marketing', 'https://www.linkedin.com/legal/privacy-policy' ),
+			'li_gc'            => array( 'LinkedIn', 'marketing' ),
+			'bcookie'          => array( 'LinkedIn', 'marketing' ),
+			'bscookie'         => array( 'LinkedIn', 'marketing' ),
+			'lidc'             => array( 'LinkedIn', 'marketing' ),
+			'usermatchhistory' => array( 'LinkedIn', 'marketing' ),
+			'an_ua'            => array( 'LinkedIn', 'marketing' ),
 			// Hotjar.
-			'_hj'              => array( 'Hotjar', 'analytics', 'https://www.hotjar.com/legal/policies/privacy/' ),
+			'_hj'              => array( 'Hotjar', 'analytics' ),
 			// Microsoft Clarity.
-			'_clck'            => array( 'Microsoft Clarity', 'analytics', 'https://privacy.microsoft.com/privacystatement' ),
-			'_clsk'            => array( 'Microsoft Clarity', 'analytics', 'https://privacy.microsoft.com/privacystatement' ),
+			'_clck'            => array( 'Microsoft Clarity', 'analytics' ),
+			'_clsk'            => array( 'Microsoft Clarity', 'analytics' ),
 			// TikTok.
-			'_ttp'             => array( 'TikTok Pixel', 'marketing', 'https://www.tiktok.com/legal/privacy-policy' ),
+			'_ttp'             => array( 'TikTok Pixel', 'marketing' ),
 			// YouTube / DoubleClick.
-			'ide'              => array( 'Google DoubleClick', 'marketing', 'https://policies.google.com/privacy' ),
-			'test_cookie'      => array( 'Google DoubleClick', 'marketing', 'https://policies.google.com/privacy' ),
-			'visitor_info1_live' => array( 'YouTube', 'marketing', 'https://policies.google.com/privacy' ),
-			'ysc'              => array( 'YouTube', 'marketing', 'https://policies.google.com/privacy' ),
+			'ide'              => array( 'Google DoubleClick', 'marketing' ),
+			'test_cookie'      => array( 'Google DoubleClick', 'marketing' ),
+			'visitor_info1_live' => array( 'YouTube', 'marketing' ),
+			'ysc'              => array( 'YouTube', 'marketing' ),
 			// WordPress / tecnici.
-			'wordpress_'       => array( 'WordPress', 'necessary', '' ),
-			'wp-settings'      => array( 'WordPress', 'necessary', '' ),
-			'wp_lang'          => array( 'WordPress', 'necessary', '' ),
-			'comment_author'   => array( 'WordPress', 'necessary', '' ),
-			'phpsessid'        => array( 'PHP', 'necessary', '' ),
-			'wp-wpml'          => array( 'WPML', 'preferences', '' ),
-			'wpml_'            => array( 'WPML', 'preferences', '' ),
-			'pll_language'     => array( 'Polylang', 'preferences', '' ),
-			'woocommerce_'     => array( 'WooCommerce', 'necessary', '' ),
-			'wp_woocommerce_session' => array( 'WooCommerce', 'necessary', '' ),
-			'biscotto_consent'       => array( 'Biscotto', 'necessary', '' ),
+			'wordpress_'       => array( 'WordPress', 'necessary' ),
+			'wp-settings'      => array( 'WordPress', 'necessary' ),
+			'wp_lang'          => array( 'WordPress', 'necessary' ),
+			'comment_author'   => array( 'WordPress', 'necessary' ),
+			'phpsessid'        => array( 'PHP', 'necessary' ),
+			'wp-wpml'          => array( 'WPML', 'preferences' ),
+			'wpml_'            => array( 'WPML', 'preferences' ),
+			'pll_language'     => array( 'Polylang', 'preferences' ),
+			'woocommerce_'     => array( 'WooCommerce', 'necessary' ),
+			'wp_woocommerce_session' => array( 'WooCommerce', 'necessary' ),
+			'biscotto_consent'       => array( 'Biscotto', 'necessary' ),
 		);
 
 		$lc = strtolower( $name );
@@ -731,17 +733,56 @@ class Biscotto_Scanner {
 	}
 
 	/**
-	 * Normalizza [service, category, url_policy] in array associativo.
+	 * Normalizza [service, category] in array associativo, risolvendo l'URL
+	 * dell'informativa privacy dal nome del servizio.
 	 *
-	 * @param array $vals Tripletta.
+	 * @param array $vals Coppia [service, category].
 	 * @return array
 	 */
 	private function shape( $vals ) {
+		$service = isset( $vals[0] ) ? $vals[0] : '';
 		return array(
-			'service'    => isset( $vals[0] ) ? $vals[0] : '',
+			'service'    => $service,
 			'category'   => isset( $vals[1] ) ? $vals[1] : 'necessary',
-			'url_policy' => isset( $vals[2] ) ? $vals[2] : '',
+			'url_policy' => $this->policy_url( $service ),
 		);
+	}
+
+	/**
+	 * Informativa privacy pubblica del vendor, indicizzata per nome del
+	 * servizio (non per hostname). È testo mostrato all'amministratore per
+	 * compilare la cookie policy: il plugin non richiede nulla a questi URL.
+	 *
+	 * @param string $service Nome del servizio restituito dalla classificazione.
+	 * @return string URL dell'informativa, o stringa vuota se non nota.
+	 */
+	private function policy_url( $service ) {
+		$policies = array(
+			'Google Fonts'         => 'https://policies.google.com/privacy',
+			'Google Maps'          => 'https://policies.google.com/privacy',
+			'Google Analytics'     => 'https://policies.google.com/privacy',
+			'Google Analytics 4'   => 'https://policies.google.com/privacy',
+			'Google Tag Manager'   => 'https://policies.google.com/privacy',
+			'Google Ads'           => 'https://policies.google.com/privacy',
+			'Google DoubleClick'   => 'https://policies.google.com/privacy',
+			'Google (gstatic)'     => 'https://policies.google.com/privacy',
+			'Google reCAPTCHA'     => 'https://policies.google.com/privacy',
+			'YouTube'              => 'https://policies.google.com/privacy',
+			'YouTube (no-cookie)'  => 'https://policies.google.com/privacy',
+			'Gravatar'             => 'https://automattic.com/privacy/',
+			'Meta'                 => 'https://www.facebook.com/privacy/policy/',
+			'Meta Pixel'           => 'https://www.facebook.com/privacy/policy/',
+			'LinkedIn'             => 'https://www.linkedin.com/legal/privacy-policy',
+			'LinkedIn Ads'         => 'https://www.linkedin.com/legal/privacy-policy',
+			'LinkedIn Insight'     => 'https://www.linkedin.com/legal/privacy-policy',
+			'Hotjar'               => 'https://www.hotjar.com/legal/policies/privacy/',
+			'Microsoft Clarity'    => 'https://privacy.microsoft.com/privacystatement',
+			'Cloudflare Insights'  => 'https://www.cloudflare.com/privacypolicy/',
+			'Vimeo'                => 'https://vimeo.com/privacy',
+			'TikTok Pixel'         => 'https://www.tiktok.com/legal/privacy-policy',
+		);
+
+		return isset( $policies[ $service ] ) ? $policies[ $service ] : '';
 	}
 
 	/**
