@@ -16,6 +16,16 @@ dist/
 # --- Corrispondenza con WordPress.org (non pubblicare) ---
 *.eml
 
+# --- Segreti / credenziali (MAI committare) ---
+Password.txt
+*password*.txt
+
+# --- Output di tool locali ---
+graphify-out/
+
+# --- Working copy SVN per la pubblicazione wporg (fuori dal repo) ---
+biscotto-wporg-svn/
+
 # --- Sistema / editor ---
 .DS_Store
 Thumbs.db
