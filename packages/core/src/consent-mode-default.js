@@ -2,11 +2,11 @@
  * Biscotto — Google Consent Mode v2 DEFAULT
  * --------------------------------------------------------------------------
  * Questo snippet DEVE essere iniettato nel <head> PRIMA dello snippet GTM/GA4
- * (vedi consentkit-project.md §4.2, §13.7). Imposta tutto su "denied" finché
+ * (vedi biscotto-project.md §4.2, §13.7). Imposta tutto su "denied" finché
  * l'utente non presta il consenso: è il presupposto del prior blocking lato
  * Google.
  *
- * - WordPress: emesso da class-consentkit-frontend.php su wp_head priorità 1.
+ * - WordPress: emesso da class-biscotto-frontend.php su wp_head priorità 1.
  * - Siti statici / standalone: copia-incolla questo blocco in cima al <head>,
  *   prima di GTM. NON usare async/defer.
  * --------------------------------------------------------------------------

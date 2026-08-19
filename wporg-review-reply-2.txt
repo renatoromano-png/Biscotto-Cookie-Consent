@@ -1,0 +1,74 @@
+Reply to: WordPress Plugin Directory <plugins@wordpress.org>
+Subject: Re: [WordPress Plugin Directory] Review in Progress: ConsentKit
+Review ID: R foodandtech-cookie-consent-manager/renatosaka/18Jul26/T1
+(Reply ABOVE the "Please reply above this line" marker in the original email.)
+
+---------------------------------------------------------------------------
+
+Hi,
+
+Thanks for the detailed review. I've uploaded a corrected version (1.5.3).
+
+1) Consent log endpoint (permission_callback)
+
+You are right that the wp_rest nonce is obtainable by any anonymous visitor and
+therefore is not an authorization boundary. The endpoint has to stay public —
+anonymous visitors record their own consent through it via navigator.sendBeacon,
+so there is no user to authorize — but it no longer writes to the database
+without a real limit:
+
+- the route is registered only when the consent log is enabled, and it is
+  disabled by default, so on a default install the endpoint does not exist and
+  returns 404;
+- each IP address is limited to 10 writes per hour. The limit is keyed on the
+  address, never on a client-settable header: keying it on anything the caller
+  chooses would let them reset the counter on every request;
+- independently of that, immediately before inserting, the plugin counts the
+  rows already written in the past hour and refuses beyond a site-wide ceiling.
+  It counts rows rather than requests, so rejected requests cannot consume the
+  quota, and the bound does not depend on a cache backend being present;
+- identical submissions from the same visitor write nothing for up to 24 hours.
+  The visitor identifier is salted per day, so that window is shorter for
+  submissions made near midnight UTC; de-duplication is a volume reducer, not
+  the bound — the two limits above are;
+- records are deleted automatically by a daily cron job once they exceed the
+  configured retention period, 12 months by default.
+
+The nonce is still verified, but only as CSRF protection; the code comments now
+say so explicitly instead of presenting it as access control. Database errors
+now return 500 rather than reporting a success that did not happen.
+
+2) Calling files remotely
+
+I believe this one is a false positive. The three lines you cited in
+class-biscotto-scanner.php (formerly class-consentkit-scanner.php) are entries
+in a static lookup table that maps a hostname to a vendor name, a cookie
+category and that vendor's privacy policy URL. The plugin never requests
+anything from those hosts: it scans the HTML the site itself produces and uses
+this table to recognise and classify the third-party resources already present,
+so the administrator can build an accurate cookie policy. There is no
+wp_remote_get, no enqueue and no iframe pointing at them — only string
+comparisons against hostnames found in the site's own markup.
+
+For completeness, since grepping that file will turn it up: there is one
+wp_remote_get in class-biscotto-scanner.php, used by the scanner to fetch a page
+of the administrator's own site in order to inspect its markup. It is restricted
+to first-party URLs by an is_first_party() check before the request is made, so
+it cannot be pointed at an external host.
+
+The only outbound request to a third party is the on-demand GitHub API call
+already documented under "External services" in readme.txt, which happens solely
+when an administrator clicks "Check for database updates".
+
+3) Slug
+
+Please reserve the slug "biscotto-cookie-consent" (display name "Biscotto –
+Cookie Consent") instead of "foodandtech-cookie-consent-manager", as in my
+previous messages. The text domain matches that slug throughout.
+
+Tested on a clean WordPress install with WP_DEBUG enabled, and the plugin now
+passes Plugin Check with no errors or warnings.
+
+Thanks!
+
+Renato

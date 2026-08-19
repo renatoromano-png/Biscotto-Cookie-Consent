@@ -4,19 +4,19 @@
  * con lo shortcode del registro, da rivedere e completare a mano prima
  * di pubblicare (la policy resta un documento dell'editore, non auto-pubblicato).
  *
- * @package ConsentKit
+ * @package Biscotto
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class ConsentKit_Policy_Page {
+class Biscotto_Policy_Page {
 
-	const OPTION      = 'consentkit_policy_page_id';
-	const ACTION      = 'consentkit_create_policy_page';
-	const DATE_OPTION = 'consentkit_policy_last_updated';
-	const DATE_ACTION = 'consentkit_update_policy_date';
+	const OPTION      = 'biscotto_policy_page_id';
+	const ACTION      = 'biscotto_create_policy_page';
+	const DATE_OPTION = 'biscotto_policy_last_updated';
+	const DATE_ACTION = 'biscotto_update_policy_date';
 
 	public function __construct() {
 		add_action( 'admin_post_' . self::ACTION, array( $this, 'handle_create' ) );
@@ -49,7 +49,7 @@ class ConsentKit_Policy_Page {
 	}
 
 	/**
-	 * Data (in formato leggibile, localizzata) da mostrare via [consentkit_last_updated].
+	 * Data (in formato leggibile, localizzata) da mostrare via [biscotto_last_updated].
 	 * Se non è mai stata impostata la inizializza a oggi.
 	 *
 	 * @return string
@@ -110,7 +110,7 @@ class ConsentKit_Policy_Page {
 			return;
 		}
 
-		// Inizializza subito la data mostrata da [consentkit_last_updated].
+		// Inizializza subito la data mostrata da [biscotto_last_updated].
 		if ( ! get_option( self::DATE_OPTION ) ) {
 			update_option( self::DATE_OPTION, current_time( 'Y-m-d' ) );
 		}
@@ -132,9 +132,9 @@ class ConsentKit_Policy_Page {
 
 		$url = add_query_arg(
 			array(
-				'page'           => 'consentkit',
-				'tab'            => 'cookies',
-				'ck_policy_date' => 'updated',
+				'page'                => 'biscotto',
+				'tab'                 => 'cookies',
+				'biscotto_policy_date' => 'updated',
 			),
 			admin_url( 'options-general.php' )
 		);
@@ -149,10 +149,10 @@ class ConsentKit_Policy_Page {
 	private function redirect_back( $result, $page_id = 0 ) {
 		$url = add_query_arg(
 			array(
-				'page'             => 'consentkit',
-				'tab'              => 'cookies',
-				'ck_policy_page'   => $result,
-				'ck_policy_page_id' => $page_id,
+				'page'                    => 'biscotto',
+				'tab'                     => 'cookies',
+				'biscotto_policy_page'    => $result,
+				'biscotto_policy_page_id' => $page_id,
 			),
 			admin_url( 'options-general.php' )
 		);
@@ -164,20 +164,20 @@ class ConsentKit_Policy_Page {
 	 * Avviso con esito subito dopo la creazione della pagina, o dopo l'aggiornamento data.
 	 */
 	public function maybe_render_notice() {
-		if ( 'consentkit' !== sanitize_key( wp_unslash( $_GET['page'] ?? '' ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( 'biscotto' !== sanitize_key( wp_unslash( $_GET['page'] ?? '' ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return;
 		}
 
-		if ( isset( $_GET['ck_policy_date'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['biscotto_policy_date'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Data di ultima modifica della Cookie Policy aggiornata a oggi.', 'biscotto-cookie-consent' ) . '</p></div>';
 			return;
 		}
 
-		if ( ! isset( $_GET['ck_policy_page'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! isset( $_GET['biscotto_policy_page'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return;
 		}
-		$result  = sanitize_key( $_GET['ck_policy_page'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$page_id = isset( $_GET['ck_policy_page_id'] ) ? absint( $_GET['ck_policy_page_id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$result  = sanitize_key( $_GET['biscotto_policy_page'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$page_id = isset( $_GET['biscotto_policy_page_id'] ) ? absint( $_GET['biscotto_policy_page_id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		if ( 'error' === $result ) {
 			echo '<div class="notice notice-error"><p>' . esc_html__( 'Non è stato possibile creare la pagina Cookie Policy.', 'biscotto-cookie-consent' ) . '</p></div>';
@@ -224,7 +224,7 @@ class ConsentKit_Policy_Page {
 <!-- /wp:paragraph -->
 
 <!-- wp:paragraph -->
-<p><em>Questa cookie policy è stata aggiornata l\'ultima volta: [consentkit_last_updated]</em></p>
+<p><em>Questa cookie policy è stata aggiornata l\'ultima volta: [biscotto_last_updated]</em></p>
 <!-- /wp:paragraph -->
 
 <!-- wp:heading {"level":3} -->
@@ -304,7 +304,7 @@ class ConsentKit_Policy_Page {
 <!-- /wp:heading -->
 
 <!-- wp:shortcode -->
-[consentkit_cookie_policy]
+[biscotto_cookie_policy]
 <!-- /wp:shortcode -->
 
 <!-- wp:heading {"level":3} -->

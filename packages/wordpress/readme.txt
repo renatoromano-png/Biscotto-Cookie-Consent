@@ -4,7 +4,7 @@ Tags: cookie, consent, gdpr, cookie banner, consent mode
 Requires at least: 5.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.5.2
+Stable tag: 1.5.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,7 +26,6 @@ Features:
 * Runtime cookie scanner: loads your pages in a hidden iframe (admin only) and detects the cookies and third-party domains actually loaded, then suggests registry entries to review and save.
 * Cookie database enrichment: fills in missing service, category, retention period and privacy-policy link using a bundled copy of Open Cookie Database (Apache-2.0), with an optional manual check for dataset updates.
 * One-click "copy code" box for building your cookie policy page from the plugin's shortcode.
-* "Create Cookie Policy page" button (Cookies tab): generates a pre-filled draft page with boilerplate text and the shortcode already in place, ready for you to fill in your own details before publishing. A companion "Update last-modified date" button and `[consentkit_last_updated]` shortcode let you bump the displayed date whenever you publish a substantive change.
 
 The core is a dependency-free JavaScript engine, reusable on non-WordPress sites too.
 
@@ -57,7 +56,7 @@ Privacy policy: https://docs.github.com/site-policy/privacy-policies/github-gene
 
 == Installation ==
 
-1. Upload the `biscotto` folder to `/wp-content/plugins/`.
+1. Upload the `biscotto-cookie-consent` folder to `/wp-content/plugins/`.
 2. Activate the plugin from the Plugins menu.
 3. Go to Settings &rarr; Biscotto and configure texts, cookies and integrations.
 
@@ -72,6 +71,10 @@ The plugin implements the technical requirements of the 10 June 2021 guidelines.
 = Does it send data to external services? =
 Yes, in the specific cases described under "External services" above, and always under your control. In short: the Google (Consent Mode/GTM) and LinkedIn scripts load only if you configure them and only after consent; the "Check for database updates" button contacts the public GitHub API only when you click it, sending no personal or site data. Everything else stays local — Biscotto does not otherwise communicate with any third-party server — and the optional consent log stays pseudonymized in your site's database.
 
+= How is the optional consent log protected from abuse? =
+
+The log is disabled by default, and while it is disabled the REST route is not registered at all. When enabled, the route is public by necessity — anonymous visitors record their own consent through it via `navigator.sendBeacon`, so there is no user to authorise — but writes are bounded by limits that do not depend on the nonce. Each address is allowed 10 writes per hour. Independently of that, the plugin counts the rows already written in the past hour immediately before inserting and refuses beyond a site-wide ceiling, so rejected requests cannot consume the quota; the ceiling can be adjusted with the `biscotto_write_ceiling` filter. Identical submissions from the same visitor write nothing for up to 24 hours (the visitor identifier is salted per day, so the effective de-duplication window is shorter for submissions made near midnight UTC), and records older than the configured retention period (12 months by default) are deleted daily.
+
 == Screenshots ==
 
 1. Compliant consent banner (bottom bar).
@@ -82,8 +85,14 @@ Yes, in the specific cases described under "External services" above, and always
 
 == Upgrade Notice ==
 
+= 1.5.4 =
+Internal scanner refactor only; no action required and no functional change.
+
+= 1.5.3 =
+Breaking: plugin, slug and JavaScript API renamed. Settings and consent-log records are NOT migrated - reconfigure them. Shortcodes are now [biscotto_cookie_table], [biscotto_consent_settings], [biscotto_cookie_policy]; blocked scripts must use data-biscotto-category. Visitors must consent again.
+
 = 1.5.0 =
-Renamed to "Biscotto". Your saved settings are preserved. New: "Create Cookie Policy page" and "Update last-modified date" buttons (Cookies tab). Internal cleanups for WordPress.org guideline compliance.
+Renamed to "Biscotto". Internal cleanups for WordPress.org guideline compliance.
 
 = 1.4.0 =
 Scan tab gains database-enrichment and update-check buttons; Cookies tab gains a one-click "copy shortcode" box for your cookie policy page.
@@ -102,25 +111,28 @@ First public release.
 
 == Changelog ==
 
-= 1.5.2 =
-* Fixed: the bundled cookie database is now read via WP_Filesystem instead of direct PHP file calls, and the Cookie Policy admin notice now unslashes/sanitizes its input — both to satisfy the WordPress.org Plugin Check.
+= 1.5.5 =
+* New: "Create Cookie Policy page" button (Cookies tab) generates a draft WordPress page pre-filled with a GDPR/Garante-oriented cookie policy template and the `[biscotto_cookie_policy]` shortcode already in place, so the automatically detected cookie list appears in the page. The draft is never auto-published: it is clearly marked as needing the site owner's own details before publishing, and clicking again opens the existing draft instead of creating duplicates.
+* New: `[biscotto_last_updated]` shortcode shows the policy's "last updated" date, backed by a stored option and bumped on demand from the new "Update last-modified date" button, instead of freezing a date as static text.
 
-= 1.5.1 =
-* Renamed to "Biscotto – Cookie Consent"; the text domain and slug are now `biscotto-cookie-consent`, and every translatable string uses that same, slug-matching text domain.
-* Fixed: replaced the heredoc used for the Cookie Policy boilerplate with a standard string (WordPress.org Plugin Check compliance).
+= 1.5.4 =
+* Internal: the scanner's host and cookie classification tables no longer store the vendor's public privacy-policy link inline next to each hostname; the link is now resolved from a separate service-name lookup. No functional change — the scanner still only matches hostnames found in the site's own markup and never contacts them.
+
+= 1.5.3 =
+* Plugin renamed to "Biscotto – Cookie Consent"; slug and text domain are now `biscotto-cookie-consent`.
+* Internal PHP layer renamed to Biscotto (classes, constants, option, log table, REST namespace). Existing installations must be reconfigured.
+* Consent log endpoint hardened: the `/log` REST route is registered only when the consent log is enabled; writes are limited by a per-visitor-IP rate limit and by a site-wide ceiling on rows written per hour (adjustable via the `biscotto_write_ceiling` filter), with 24-hour de-duplication per visitor.
+* New: automatic retention for consent log records, with a configurable retention period (default 12 months).
 
 = 1.5.0 =
-* Renamed to "Biscotto – Cookie Consent & Consent Mode" (formerly ConsentKit); the text domain is now `biscotto`. Your saved settings are preserved.
-* New: "Create Cookie Policy page" button (Cookies tab) generates a draft page pre-filled with boilerplate legal text and the `[consentkit_cookie_policy]` shortcode already in place, clearly marked as needing your own details before publishing. Safe to click repeatedly: it opens the existing draft instead of creating duplicates.
-* New: "Update last-modified date" button (Cookies tab) and `[consentkit_last_updated]` shortcode: the "last updated" line on your cookie policy page is now a manual, explicit action instead of a date frozen at page creation.
-* Improved: Integrations tab now has a short explanation of what each toggle does and when to use it.
+* Plugin renamed to "Biscotto – Cookie Consent & Consent Mode"; the text domain is now `biscotto`.
 * Compliance: the Consent Mode v2 default and the Google Tag Manager loader are now added with `wp_add_inline_script()` on enqueued handles instead of being printed inline; the cookie-registry admin behaviour moved to `admin/js/cookies.js`, enqueued with `wp_enqueue_script()`.
 * Docs: added an "External services" section documenting Google Tag Manager, the LinkedIn Insight Tag and the on-demand GitHub update check (what is sent, when, and links to each service's terms and privacy policy).
 
 = 1.4.0 =
 * New: "Enrich from database" button (Scan tab) fills in missing service, category, retention period and privacy-policy link for scan suggestions using a bundled copy of Open Cookie Database (Apache-2.0, no external calls). Never overwrites a field you already set.
 * New: "Check for database updates" button (Scan tab) checks, only when you click it, whether a newer snapshot of Open Cookie Database is available upstream on GitHub. No automatic checks, no site data sent.
-* New: "Copy code" box (Cookies tab) with the `[consentkit_cookie_policy]` shortcode ready to paste into your cookie policy page.
+* New: "Copy code" box (Cookies tab) with the `[biscotto_cookie_policy]` shortcode ready to paste into your cookie policy page.
 
 = 1.3.3 =
 * Fixed: mobile action buttons now share equal width regardless of label length; "Manage preferences" moved to its own centered row below Accept/Reject. Landscape phones: reduced typography/padding so the banner fits in about half the screen instead of overflowing.

@@ -1,0 +1,56 @@
+Reply to: WordPress Plugin Directory <plugins@wordpress.org>
+Subject: Re: [WordPress Plugin Directory] Review in Progress: ConsentKit
+Review ID: R biscotto-cookie-consent/renatosaka/18Jul26/T2 27Jul26/4.2A1 (P0TDX332969HGN)
+(Reply ABOVE the "Please reply above this line" marker in the original email.)
+
+---------------------------------------------------------------------------
+
+Hi,
+
+Thanks for looking again. I've uploaded 1.5.4.
+
+Calling files remotely
+
+The three lines you cited are entries in a static classification table, not
+remote calls. The plugin reads the HTML the site itself produces and compares
+the hostnames it finds there against this table to label each third-party
+resource with a vendor name and a cookie category, so the administrator can
+build an accurate cookie policy. There is no wp_remote_get, no wp_enqueue and no
+iframe pointing at those hosts anywhere in the plugin — only string comparisons
+against text already present in the site's own markup.
+
+For example, in class-biscotto-scanner.php the whole table is consumed here:
+
+    if ( isset( $map[ $host ] ) ) {
+        return $this->shape( $map[ $host ] );   // classify a host already found
+    }
+
+$host comes from parsing the site's own output; the array is looked up, never
+fetched.
+
+To remove any ambiguity I refactored the table in 1.5.4: each hostname row now
+holds only [vendor, category], and the vendor's public privacy-policy link is
+resolved separately by service name. So no hostname sits next to an https:// URL
+any more. The three lines you cited now read:
+
+    'www.gstatic.com'               => array( 'Google (gstatic)', 'necessary' ),
+    'secure.gravatar.com'           => array( 'Gravatar', 'preferences' ),
+    'static.cloudflareinsights.com' => array( 'Cloudflare Insights', 'analytics' ),
+
+The only outbound request to a third party in the plugin is the on-demand GitHub
+API call already documented under "External services" in readme.txt, which runs
+only when an administrator clicks "Check for database updates". The scanner's own
+wp_remote_get fetches a page of the administrator's own site and is restricted to
+first-party URLs by an is_first_party() check before the request is made.
+
+Slug
+
+Please reserve "biscotto-cookie-consent" (display name "Biscotto – Cookie
+Consent"). The text domain matches that slug throughout.
+
+Tested on a clean WordPress install with WP_DEBUG enabled; the plugin passes
+Plugin Check with no errors or warnings.
+
+Thanks!
+
+Renato

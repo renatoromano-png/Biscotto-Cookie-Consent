@@ -2,14 +2,14 @@
 /**
  * Logica consenso: default settings + cookie registry predefinito.
  *
- * @package ConsentKit
+ * @package Biscotto
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class ConsentKit_Consent {
+class Biscotto_Consent {
 
 	/**
 	 * Categorie supportate. "necessary" è sempre attiva e non disattivabile.
@@ -59,6 +59,7 @@ class ConsentKit_Consent {
 
 			// --- Log consensi (server-side, opzionale) ---
 			'log_enabled'          => 0,
+			'log_retention_months' => 12,          // conservazione dei record di consenso
 
 			// --- Cookie registry ---
 			'cookies'              => self::default_registry(),

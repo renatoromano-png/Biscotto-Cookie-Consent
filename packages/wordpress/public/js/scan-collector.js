@@ -7,7 +7,7 @@
  * raccogliamo cosa è stato caricato e lo inviamo al parent via postMessage.
  *
  * NON tocca i visitatori: lo scan-mode è gated da nonce + capability admin
- * lato server (vedi class-consentkit-scanner.php).
+ * lato server (vedi class-biscotto-scanner.php).
  * --------------------------------------------------------------------------
  */
 (function (window, document) {

@@ -5,14 +5,14 @@
  * riconosce un cookie/dominio (§14.6). Nessuna chiamata esterna qui: solo
  * parsing locale on-demand del CSV vendored (vedi includes/data/NOTICE.md).
  *
- * @package ConsentKit
+ * @package Biscotto
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class ConsentKit_Cookie_Database {
+class Biscotto_Cookie_Database {
 
 	/** Data dello snapshot vendored (deve combaciare con includes/data/NOTICE.md). */
 	const SNAPSHOT_DATE = '2026-07-04';
@@ -32,75 +32,44 @@ class ConsentKit_Cookie_Database {
 	 * @return array{exact: array, wildcard: array, domain: array}
 	 */
 	public static function build_index( $csv_path ) {
-		$csv = self::read_csv_file( $csv_path );
-		if ( '' === $csv ) {
-			return array(
-				'exact'    => array(),
-				'wildcard' => array(),
-				'domain'   => array(),
-			);
-		}
-		return self::build_index_from_string( $csv );
-	}
-
-	/**
-	 * Legge il CSV bundlato tramite WP_Filesystem (niente fopen/fread diretti,
-	 * cfr. linee guida WordPress.org). È un file locale incluso nel plugin:
-	 * nessuna chiamata esterna. Ritorna stringa vuota se illeggibile.
-	 *
-	 * @param string $csv_path Percorso del CSV.
-	 * @return string
-	 */
-	private static function read_csv_file( $csv_path ) {
-		if ( ! function_exists( 'WP_Filesystem' ) ) {
-			if ( ! defined( 'ABSPATH' ) || ! file_exists( ABSPATH . 'wp-admin/includes/file.php' ) ) {
-				return '';
-			}
-			require_once ABSPATH . 'wp-admin/includes/file.php';
-		}
-
-		global $wp_filesystem;
-		if ( empty( $wp_filesystem ) ) {
-			WP_Filesystem();
-		}
-
-		if ( empty( $wp_filesystem ) || ! $wp_filesystem->exists( $csv_path ) ) {
-			return '';
-		}
-
-		$contents = $wp_filesystem->get_contents( $csv_path );
-		return is_string( $contents ) ? $contents : '';
-	}
-
-	/**
-	 * Costruisce l'indice a partire dal contenuto CSV già in memoria.
-	 * Parsing puro (str_getcsv riga per riga), senza I/O su file: testabile
-	 * in isolamento. Il dataset non contiene newline dentro i campi quotati,
-	 * quindi lo split per righe è sicuro.
-	 *
-	 * @param string $csv Contenuto del CSV.
-	 * @return array{exact: array, wildcard: array, domain: array}
-	 */
-	public static function build_index_from_string( $csv ) {
 		$index = array(
 			'exact'    => array(),
 			'wildcard' => array(),
 			'domain'   => array(),
 		);
 
-		$lines  = preg_split( '/\r\n|\r|\n/', (string) $csv );
+		// Lettura via WP_Filesystem (le funzioni fopen/fread dirette sono
+		// vietate dalle linee guida WordPress.org). Il file è un CSV di sola
+		// lettura vendorizzato col plugin e build_index() gira solo on-demand
+		// da un'azione admin, quindi caricarlo in memoria è accettabile.
+		if ( ! function_exists( 'WP_Filesystem' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		WP_Filesystem();
+		global $wp_filesystem;
+		if ( ! $wp_filesystem ) {
+			return $index;
+		}
+
+		$raw = $wp_filesystem->get_contents( $csv_path );
+		if ( false === $raw || '' === $raw ) {
+			return $index; // file mancante o illeggibile: nessun arricchimento
+		}
+
 		$header = null;
 
-		foreach ( $lines as $line ) {
+		foreach ( preg_split( "/\r\n|\n|\r/", $raw ) as $line ) {
 			if ( '' === $line ) {
-				continue;
+				continue; // riga vuota (inclusa l'eventuale finale)
 			}
+
 			$cols = str_getcsv( $line );
 
 			if ( null === $header ) {
-				$header = $cols;
+				$header = $cols; // prima riga non vuota = intestazione
 				continue;
 			}
+
 			if ( count( $cols ) !== count( $header ) ) {
 				continue; // riga malformata, salta
 			}
@@ -183,7 +152,7 @@ class ConsentKit_Cookie_Database {
 
 	/**
 	 * Mappa le 6 categorie di Open Cookie Database sulle 4 categorie Garante
-	 * di ConsentKit. Sconosciuta/vuota -> 'necessary' (prudente, l'admin rivede).
+	 * di Biscotto. Sconosciuta/vuota -> 'necessary' (prudente, l'admin rivede).
 	 *
 	 * @param string $csv_category Categoria come scritta nel CSV.
 	 * @return string

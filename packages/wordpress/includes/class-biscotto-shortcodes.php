@@ -2,30 +2,30 @@
 /**
  * Shortcode per la pagina cookie policy (documento dell'editore, §8/§13.12).
  *
- *  [consentkit_cookie_table]      → tabella dei cookie/servizi per categoria.
- *  [consentkit_consent_settings]  → stato del consenso attuale + pulsante per
+ *  [biscotto_cookie_table]      → tabella dei cookie/servizi per categoria.
+ *  [biscotto_consent_settings]  → stato del consenso attuale + pulsante per
  *                                   gestire/revocare le scelte.
- *  [consentkit_cookie_policy]      → combinazione dei due.
- *  [consentkit_last_updated]      → data (leggibile) di ultima modifica della
+ *  [biscotto_cookie_policy]      → combinazione dei due.
+ *  [biscotto_last_updated]      → data (leggibile) di ultima modifica della
  *                                   policy, aggiornata dal pulsante in admin.
  *
  * La policy resta un documento dell'editore: questi shortcode iniettano solo
  * l'elenco cookie e i controlli di consenso, non il testo informativo.
  *
- * @package ConsentKit
+ * @package Biscotto
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class ConsentKit_Shortcodes {
+class Biscotto_Shortcodes {
 
 	public function __construct() {
-		add_shortcode( 'consentkit_cookie_table', array( $this, 'cookie_table' ) );
-		add_shortcode( 'consentkit_consent_settings', array( $this, 'consent_settings' ) );
-		add_shortcode( 'consentkit_cookie_policy', array( $this, 'cookie_policy' ) );
-		add_shortcode( 'consentkit_last_updated', array( $this, 'last_updated' ) );
+		add_shortcode( 'biscotto_cookie_table', array( $this, 'cookie_table' ) );
+		add_shortcode( 'biscotto_consent_settings', array( $this, 'consent_settings' ) );
+		add_shortcode( 'biscotto_cookie_policy', array( $this, 'cookie_policy' ) );
+		add_shortcode( 'biscotto_last_updated', array( $this, 'last_updated' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'maybe_enqueue' ), 20 );
 	}
 
@@ -54,23 +54,23 @@ class ConsentKit_Shortcodes {
 		if ( ! $post ) {
 			return;
 		}
-		$has = has_shortcode( $post->post_content, 'consentkit_cookie_policy' )
-			|| has_shortcode( $post->post_content, 'consentkit_consent_settings' );
+		$has = has_shortcode( $post->post_content, 'biscotto_cookie_policy' )
+			|| has_shortcode( $post->post_content, 'biscotto_consent_settings' );
 		if ( ! $has ) {
 			return;
 		}
 
 		// Dipende dal core (espone window.Biscotto + evento biscotto:consent).
 		wp_enqueue_script(
-			'consentkit-cookie-policy',
-			CONSENTKIT_URL . 'public/js/cookie-policy.js',
-			array( 'consentkit-manager' ),
-			CONSENTKIT_VERSION,
+			'biscotto-cookie-policy',
+			BISCOTTO_URL . 'public/js/cookie-policy.js',
+			array( 'biscotto-manager' ),
+			BISCOTTO_VERSION,
 			true
 		);
 		wp_localize_script(
-			'consentkit-cookie-policy',
-			'consentkitPolicy',
+			'biscotto-cookie-policy',
+			'biscottoPolicy',
 			array(
 				'granted'    => __( 'Attivo', 'biscotto-cookie-consent' ),
 				'denied'     => __( 'Non attivo', 'biscotto-cookie-consent' ),
@@ -80,12 +80,12 @@ class ConsentKit_Shortcodes {
 	}
 
 	/**
-	 * [consentkit_cookie_table] — registry per categoria.
+	 * [biscotto_cookie_table] — registry per categoria.
 	 *
 	 * @return string HTML.
 	 */
 	public function cookie_table() {
-		$settings = ConsentKit::get_settings();
+		$settings = Biscotto::get_settings();
 		$cookies  = isset( $settings['cookies'] ) && is_array( $settings['cookies'] ) ? $settings['cookies'] : array();
 		$labels   = $this->category_labels();
 
@@ -158,7 +158,7 @@ class ConsentKit_Shortcodes {
 	}
 
 	/**
-	 * [consentkit_consent_settings] — stato attuale + pulsante gestione.
+	 * [biscotto_consent_settings] — stato attuale + pulsante gestione.
 	 *
 	 * @param array $atts Attributi shortcode.
 	 * @return string HTML.
@@ -170,7 +170,7 @@ class ConsentKit_Shortcodes {
 				'title'  => __( 'Le tue preferenze attuali', 'biscotto-cookie-consent' ),
 			),
 			$atts,
-			'consentkit_consent_settings'
+			'biscotto_consent_settings'
 		);
 
 		ob_start();
@@ -189,7 +189,7 @@ class ConsentKit_Shortcodes {
 	}
 
 	/**
-	 * [consentkit_cookie_policy] — tabella + impostazioni consenso.
+	 * [biscotto_cookie_policy] — tabella + impostazioni consenso.
 	 *
 	 * @param array $atts Attributi shortcode.
 	 * @return string HTML.
@@ -199,13 +199,13 @@ class ConsentKit_Shortcodes {
 	}
 
 	/**
-	 * [consentkit_last_updated] — data di ultima modifica della policy, in
+	 * [biscotto_last_updated] — data di ultima modifica della policy, in
 	 * formato leggibile. Aggiornata dal pulsante "Aggiorna data ultima modifica"
 	 * nel tab Cookie dell'admin.
 	 *
 	 * @return string
 	 */
 	public function last_updated() {
-		return esc_html( ConsentKit_Policy_Page::formatted_date() );
+		return esc_html( Biscotto_Policy_Page::formatted_date() );
 	}
 }

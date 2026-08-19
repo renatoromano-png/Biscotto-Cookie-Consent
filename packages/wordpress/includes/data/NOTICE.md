@@ -14,5 +14,5 @@ This is a static, manually-updated snapshot. Biscotto does not
 automatically download or update this file. The plugin's "Check for
 database updates" button (Settings → Biscotto → Scan) makes an on-demand,
 admin-triggered call to the public GitHub API to check whether a newer
-snapshot exists upstream — see `class-consentkit-cookie-database.php` and
-`class-consentkit-scanner.php`.
+snapshot exists upstream — see `class-biscotto-cookie-database.php` and
+`class-biscotto-scanner.php`.

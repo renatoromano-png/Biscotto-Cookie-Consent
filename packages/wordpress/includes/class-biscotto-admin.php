@@ -2,22 +2,23 @@
 /**
  * Admin: pagina impostazioni a 3 tab (Generale / Cookie / Integrazioni).
  *
- * @package ConsentKit
+ * @package Biscotto
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class ConsentKit_Admin {
+class Biscotto_Admin {
 
-	const PAGE_SLUG = 'consentkit';
+	const PAGE_SLUG = 'biscotto';
 
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin' ) );
-		add_filter( 'plugin_action_links_' . plugin_basename( CONSENTKIT_FILE ), array( $this, 'settings_link' ) );
+		add_filter( 'plugin_action_links_' . plugin_basename( BISCOTTO_FILE ), array( $this, 'settings_link' ) );
+		add_action( 'admin_notices', array( $this, 'write_ceiling_notice' ) );
 	}
 
 	public function register_menu() {
@@ -36,11 +37,34 @@ class ConsentKit_Admin {
 		return $links;
 	}
 
+	/**
+	 * Avvisa se il tetto sulle scritture del log consensi e' scattato.
+	 *
+	 * Senza questo avviso il sintomo sarebbe soltanto l'assenza di righe, che
+	 * su un registro di consensi e' esattamente cio' che non si vuole scoprire
+	 * tardi.
+	 */
+	public function write_ceiling_notice() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$hit = get_transient( 'biscotto_write_ceiling_hit' );
+		if ( ! $hit ) {
+			return;
+		}
+
+		printf(
+			'<div class="notice notice-warning"><p>%s</p></div>',
+			esc_html__( 'Biscotto: il tetto orario di scritture del log dei consensi e\' stato raggiunto e alcuni consensi non sono stati registrati. Se il traffico del sito lo giustifica, alza il limite con il filtro biscotto_write_ceiling.', 'biscotto-cookie-consent' )
+		);
+	}
+
 	public function enqueue_admin( $hook ) {
 		if ( 'settings_page_' . self::PAGE_SLUG !== $hook ) {
 			return;
 		}
-		wp_enqueue_style( 'consentkit-admin', CONSENTKIT_URL . 'admin/css/admin.css', array(), CONSENTKIT_VERSION );
+		wp_enqueue_style( 'biscotto-admin', BISCOTTO_URL . 'admin/css/admin.css', array(), BISCOTTO_VERSION );
 		wp_enqueue_style( 'wp-color-picker' );
 		wp_enqueue_script( 'wp-color-picker' );
 		wp_add_inline_script( 'wp-color-picker', 'jQuery(function($){$(".biscotto-color-field").wpColorPicker();});' );
@@ -48,24 +72,24 @@ class ConsentKit_Admin {
 		// Solo nel tab Scansione: orchestratore dello scanner runtime (§14).
 		$tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'general'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( 'scan' === $tab ) {
-			wp_enqueue_script( 'consentkit-scan', CONSENTKIT_URL . 'admin/js/scan.js', array(), CONSENTKIT_VERSION, true );
+			wp_enqueue_script( 'biscotto-scan', BISCOTTO_URL . 'admin/js/scan.js', array(), BISCOTTO_VERSION, true );
 			$origin = wp_parse_url( home_url(), PHP_URL_SCHEME ) . '://' . wp_parse_url( home_url(), PHP_URL_HOST );
 			$port   = wp_parse_url( home_url(), PHP_URL_PORT );
 			if ( $port ) {
 				$origin .= ':' . $port;
 			}
 			wp_localize_script(
-				'consentkit-scan',
-				'consentkitScan',
+				'biscotto-scan',
+				'biscottoScan',
 				array(
-					'scanNonce'  => ConsentKit_Scanner::scan_nonce(),
+					'scanNonce'  => Biscotto_Scanner::scan_nonce(),
 					'restNonce'  => wp_create_nonce( 'wp_rest' ),
-					'collectUrl' => esc_url_raw( rest_url( 'consentkit/v1/scan/collect' ) ),
-					'importUrl'  => esc_url_raw( rest_url( 'consentkit/v1/scan/import' ) ),
-					'serverUrl'  => esc_url_raw( rest_url( 'consentkit/v1/scan/server' ) ),
-					'enrichUrl'  => esc_url_raw( rest_url( 'consentkit/v1/scan/enrich' ) ),
-					'dbVersionUrl' => esc_url_raw( rest_url( 'consentkit/v1/scan/db-version' ) ),
-					'githubUrl'    => 'https://github.com/' . ConsentKit_Cookie_Database::GITHUB_REPO . '/commits/master/' . ConsentKit_Cookie_Database::GITHUB_CSV_PATH,
+					'collectUrl' => esc_url_raw( rest_url( 'biscotto/v1/scan/collect' ) ),
+					'importUrl'  => esc_url_raw( rest_url( 'biscotto/v1/scan/import' ) ),
+					'serverUrl'  => esc_url_raw( rest_url( 'biscotto/v1/scan/server' ) ),
+					'enrichUrl'  => esc_url_raw( rest_url( 'biscotto/v1/scan/enrich' ) ),
+					'dbVersionUrl' => esc_url_raw( rest_url( 'biscotto/v1/scan/db-version' ) ),
+					'githubUrl'    => 'https://github.com/' . Biscotto_Cookie_Database::GITHUB_REPO . '/commits/master/' . Biscotto_Cookie_Database::GITHUB_CSV_PATH,
 					'origin'     => $origin,
 					'timeoutMs'  => 12000,
 					'maxUrls'    => 10,
@@ -110,10 +134,10 @@ class ConsentKit_Admin {
 
 		// Solo nel tab Cookie: editor delle righe del registro + copia shortcode.
 		if ( 'cookies' === $tab ) {
-			wp_enqueue_script( 'consentkit-cookies', CONSENTKIT_URL . 'admin/js/cookies.js', array(), CONSENTKIT_VERSION, true );
+			wp_enqueue_script( 'biscotto-cookies', BISCOTTO_URL . 'admin/js/cookies.js', array(), BISCOTTO_VERSION, true );
 			wp_localize_script(
-				'consentkit-cookies',
-				'consentkitCookies',
+				'biscotto-cookies',
+				'biscottoCookies',
 				array(
 					'confirmClear' => __( 'Svuotare tutto il registro cookie? Le righe verranno rimosse; salva per confermare.', 'biscotto-cookie-consent' ),
 					'copied'       => __( 'Copiato!', 'biscotto-cookie-consent' ),
@@ -123,7 +147,7 @@ class ConsentKit_Admin {
 	}
 
 	public function register_settings() {
-		register_setting( 'consentkit_group', CONSENTKIT_OPTION, array( $this, 'sanitize' ) );
+		register_setting( 'biscotto_group', BISCOTTO_OPTION, array( $this, 'sanitize' ) );
 	}
 
 	/**
@@ -133,7 +157,7 @@ class ConsentKit_Admin {
 	 * @return array
 	 */
 	public function sanitize( $input ) {
-		$out = ConsentKit::get_settings(); // base sui valori correnti
+		$out = Biscotto::get_settings(); // base sui valori correnti
 		$input = is_array( $input ) ? $input : array();
 
 		// --- Testi ---
@@ -189,10 +213,13 @@ class ConsentKit_Admin {
 			$out['linkedin_partner_id'] = preg_replace( '/\D/', '', $input['linkedin_partner_id'] );
 		}
 		$out['log_enabled'] = empty( $input['log_enabled'] ) ? 0 : 1;
+		$out['log_retention_months'] = isset( $input['log_retention_months'] )
+			? min( 120, max( 1, absint( $input['log_retention_months'] ) ) )
+			: $out['log_retention_months'];
 
 		// --- Cookie registry ---
 		if ( isset( $input['cookies'] ) && is_array( $input['cookies'] ) ) {
-			$cats    = ConsentKit_Consent::categories();
+			$cats    = Biscotto_Consent::categories();
 			$cookies = array();
 			foreach ( $input['cookies'] as $row ) {
 				$name = isset( $row['name'] ) ? sanitize_text_field( $row['name'] ) : '';
@@ -218,7 +245,7 @@ class ConsentKit_Admin {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
-		$settings = ConsentKit::get_settings();
+		$settings = Biscotto::get_settings();
 		$tabs     = array(
 			'general'      => __( 'Generale', 'biscotto-cookie-consent' ),
 			'cookies'      => __( 'Cookie', 'biscotto-cookie-consent' ),
@@ -227,7 +254,7 @@ class ConsentKit_Admin {
 		);
 		$active = isset( $_GET['tab'] ) && isset( $tabs[ $_GET['tab'] ] ) ? sanitize_key( $_GET['tab'] ) : 'general'; // phpcs:ignore WordPress.Security.NonceVerification
 		?>
-		<div class="wrap consentkit-wrap">
+		<div class="wrap biscotto-wrap">
 			<h1><?php esc_html_e( 'Biscotto', 'biscotto-cookie-consent' ); ?></h1>
 
 			<h2 class="nav-tab-wrapper">
@@ -240,7 +267,7 @@ class ConsentKit_Admin {
 			</h2>
 
 			<?php
-			$view = CONSENTKIT_DIR . 'admin/views/settings-' . $active . '.php';
+			$view = BISCOTTO_DIR . 'admin/views/settings-' . $active . '.php';
 			if ( 'scan' === $active ) {
 				// Il tab Scansione è un pannello interattivo (REST), non un form di opzioni.
 				if ( file_exists( $view ) ) {
@@ -249,8 +276,8 @@ class ConsentKit_Admin {
 			} else {
 				?>
 				<form method="post" action="options.php">
-					<?php settings_fields( 'consentkit_group' ); ?>
-					<input type="hidden" name="<?php echo esc_attr( CONSENTKIT_OPTION ); ?>[__tab]" value="<?php echo esc_attr( $active ); ?>" />
+					<?php settings_fields( 'biscotto_group' ); ?>
+					<input type="hidden" name="<?php echo esc_attr( BISCOTTO_OPTION ); ?>[__tab]" value="<?php echo esc_attr( $active ); ?>" />
 					<?php
 					if ( file_exists( $view ) ) {
 						include $view;
