@@ -6,6 +6,8 @@
  *  [biscotto_consent_settings]  → stato del consenso attuale + pulsante per
  *                                   gestire/revocare le scelte.
  *  [biscotto_cookie_policy]      → combinazione dei due.
+ *  [biscotto_last_updated]      → data (leggibile) di ultima modifica della
+ *                                   policy, aggiornata dal pulsante in admin.
  *
  * La policy resta un documento dell'editore: questi shortcode iniettano solo
  * l'elenco cookie e i controlli di consenso, non il testo informativo.
@@ -23,6 +25,7 @@ class Biscotto_Shortcodes {
 		add_shortcode( 'biscotto_cookie_table', array( $this, 'cookie_table' ) );
 		add_shortcode( 'biscotto_consent_settings', array( $this, 'consent_settings' ) );
 		add_shortcode( 'biscotto_cookie_policy', array( $this, 'cookie_policy' ) );
+		add_shortcode( 'biscotto_last_updated', array( $this, 'last_updated' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'maybe_enqueue' ), 20 );
 	}
 
@@ -193,5 +196,16 @@ class Biscotto_Shortcodes {
 	 */
 	public function cookie_policy( $atts ) {
 		return $this->cookie_table() . $this->consent_settings( is_array( $atts ) ? $atts : array() );
+	}
+
+	/**
+	 * [biscotto_last_updated] — data di ultima modifica della policy, in
+	 * formato leggibile. Aggiornata dal pulsante "Aggiorna data ultima modifica"
+	 * nel tab Cookie dell'admin.
+	 *
+	 * @return string
+	 */
+	public function last_updated() {
+		return esc_html( Biscotto_Policy_Page::formatted_date() );
 	}
 }

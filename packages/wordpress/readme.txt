@@ -4,7 +4,7 @@ Tags: cookie, consent, gdpr, cookie banner, consent mode
 Requires at least: 5.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.5.4
+Stable tag: 1.5.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -110,6 +110,10 @@ Adds a runtime cookie scanner to detect cookies and third-party services loaded 
 First public release.
 
 == Changelog ==
+
+= 1.5.5 =
+* New: "Create Cookie Policy page" button (Cookies tab) generates a draft WordPress page pre-filled with a GDPR/Garante-oriented cookie policy template and the `[biscotto_cookie_policy]` shortcode already in place, so the automatically detected cookie list appears in the page. The draft is never auto-published: it is clearly marked as needing the site owner's own details before publishing, and clicking again opens the existing draft instead of creating duplicates.
+* New: `[biscotto_last_updated]` shortcode shows the policy's "last updated" date, backed by a stored option and bumped on demand from the new "Update last-modified date" button, instead of freezing a date as static text.
 
 = 1.5.4 =
 * Internal: the scanner's host and cookie classification tables no longer store the vendor's public privacy-policy link inline next to each hostname; the link is now resolved from a separate service-name lookup. No functional change — the scanner still only matches hostnames found in the site's own markup and never contacts them.

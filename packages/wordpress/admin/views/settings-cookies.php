@@ -62,6 +62,35 @@ function biscotto_cookie_row( $i, $row, $opt, $cats ) {
 		<code>[biscotto_cookie_table]</code> <?php esc_html_e( '(solo tabella cookie),', 'biscotto-cookie-consent' ); ?>
 		<code>[biscotto_consent_settings]</code> <?php esc_html_e( '(solo stato consenso + pulsante).', 'biscotto-cookie-consent' ); ?>
 	</p>
+	<?php
+	$biscotto_policy_page = Biscotto_Policy_Page::existing_page();
+	$biscotto_policy_url  = $biscotto_policy_page
+		? get_edit_post_link( $biscotto_policy_page->ID, 'raw' )
+		: Biscotto_Policy_Page::create_url();
+	?>
+	<p>
+		<a href="<?php echo esc_url( $biscotto_policy_url ); ?>" class="button">
+			<?php echo $biscotto_policy_page ? esc_html__( 'Apri la bozza Cookie Policy', 'biscotto-cookie-consent' ) : esc_html__( 'Crea pagina Cookie Policy', 'biscotto-cookie-consent' ); ?>
+		</a>
+		<span class="description">
+			<?php if ( $biscotto_policy_page ) : ?>
+				<?php esc_html_e( 'Bozza già creata: da rivedere e completare con i dati del titolare del sito prima di pubblicare.', 'biscotto-cookie-consent' ); ?>
+			<?php else : ?>
+				<?php esc_html_e( 'Crea una bozza pre-compilata (con questo shortcode già inserito) da completare con i dati del titolare del sito prima di pubblicare.', 'biscotto-cookie-consent' ); ?>
+			<?php endif; ?>
+		</span>
+	</p>
+	<p>
+		<a href="<?php echo esc_url( Biscotto_Policy_Page::update_date_url() ); ?>" class="button">
+			<?php esc_html_e( 'Aggiorna data ultima modifica', 'biscotto-cookie-consent' ); ?>
+		</a>
+		<span class="description">
+			<?php
+			/* translators: %s: data corrente di "ultima modifica" mostrata dallo shortcode [biscotto_last_updated]. */
+			printf( esc_html__( 'Attualmente mostrata come: %s. Usalo quando pubblichi modifiche sostanziali alla policy.', 'biscotto-cookie-consent' ), '<strong>' . esc_html( Biscotto_Policy_Page::formatted_date() ) . '</strong>' );
+			?>
+		</span>
+	</p>
 </div>
 
 <table class="widefat striped biscotto-cookies">

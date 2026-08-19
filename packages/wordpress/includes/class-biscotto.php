@@ -47,6 +47,8 @@ final class Biscotto {
 
 		if ( is_admin() ) {
 			$this->admin = new Biscotto_Admin();
+			// Pulsante "Crea pagina Cookie Policy" nel tab Cookie.
+			new Biscotto_Policy_Page();
 		}
 	}
 
